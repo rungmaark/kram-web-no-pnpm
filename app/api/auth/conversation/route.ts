@@ -19,7 +19,7 @@ export async function GET() {
   const convos = await Conversation.find({
     participants: currentUserId,
   })
-    .populate("participants", "displayName gender")
+    .populate("participants", "displayName gender profileImage")
     .sort({ updatedAt: -1 })
     .lean();
 

@@ -56,9 +56,8 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`flex items-center justify-between ${
-        pathname === "/feed" ? "pl-16" : "pl-4"
-      } pr-2 lg:px-0 py-3 backdrop-blur-md bg-white/80 dark:bg-navbarblack/60 shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-700 transition dark:text-gray-50`}
+      className={`flex items-center justify-between ${pathname === "/feed" ? "pl-16" : "pl-4"
+        } pr-2 lg:px-0 py-3 backdrop-blur-md bg-white/80 dark:bg-navbarblack/60 shadow-sm sticky top-0 z-20 border-b border-gray-200 dark:border-gray-700 transition dark:text-gray-50`}
     >
       <img
         src="/image/KramLogo.svg"
@@ -70,11 +69,10 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {/* Home Button */}
         <button
-          className={`p-2 rounded-full ${
-            pathname === "/"
+          className={`p-2 rounded-full ${pathname === "/"
               ? "bg-kramblue text-white cursor-pointer"
               : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-          }`}
+            }`}
           onClick={() => router.push("/")}
         >
           <Search className="w-5 h-5" suppressHydrationWarning />
@@ -82,11 +80,10 @@ export default function Navbar() {
 
         {/* Search Button */}
         <button
-          className={`p-2 rounded-full ${
-            pathname === "/feed"
+          className={`p-2 rounded-full ${pathname === "/feed"
               ? "bg-kramblue text-white cursor-pointer"
               : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-          }`}
+            }`}
           onClick={() => router.push("/feed")}
         >
           <Quote className="w-5 h-5" suppressHydrationWarning />
@@ -95,11 +92,10 @@ export default function Navbar() {
         {/* Message Button */}
         {user && (
           <button
-            className={`p-2 rounded-full ${
-              pathname === "/message"
+            className={`p-2 rounded-full ${pathname === "/message"
                 ? "bg-kramblue text-white cursor-pointer"
                 : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-            }`}
+              }`}
             onClick={() => router.push("/message")}
           >
             <MessageCircle className="w-5 h-5" suppressHydrationWarning />
@@ -107,16 +103,15 @@ export default function Navbar() {
         )}
 
         {/* User Profile Button */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative">
           <button
-            className={`p-2 rounded-full ${
-              pathname?.startsWith(`/profile/${user?.username}`)
+            className={`p-2 rounded-full ${pathname?.startsWith(`/profile/${user?.username}`)
                 ? "bg-kramblue text-white cursor-pointer"
                 : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-            }`}
+              }`}
             onClick={() => {
               if (user) {
-                setIsDropdownOpen((prev) => !prev);
+                router.push(`/profile/${user.username}`);
               } else {
                 router.push("/signup");
               }
@@ -125,7 +120,8 @@ export default function Navbar() {
             <UserIcon className="w-5 h-5" suppressHydrationWarning />
           </button>
 
-          {/* Dropdown Menu */}
+          {/* 
+          // ======= Dropdown Menu ถูกคอมเมนต์ออกแล้ว =======
           <AnimatePresence>
             {user && isDropdownOpen && (
               <motion.div
@@ -141,12 +137,6 @@ export default function Navbar() {
                 >
                   <UserIcon className="w-4 h-4" /> View Profile
                 </button>
-                {/* <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
-                  onClick={() => router.push("/settings")}
-                >
-                  <Settings className="w-4 h-4" /> Settings
-                </button> */}
                 <button
                   className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
                   onClick={handleSignout}
@@ -156,6 +146,7 @@ export default function Navbar() {
               </motion.div>
             )}
           </AnimatePresence>
+          */}
         </div>
       </div>
     </nav>

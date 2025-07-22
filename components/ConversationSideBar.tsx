@@ -53,17 +53,20 @@ export default function ConversationSideBar({
       {conversations.map((c) => {
         const isGroup = c.isGroup;
         const other =
-          c.participants.find((p: any) => p._id !== currentUserId) ??
-          c.participants[0];
-        const avatar = avatarByGender[other.gender ?? ""] ?? defaultAvatar;
+          c.participants.find((p: any) => p._id !== currentUserId) ?? c.participants[0];
+
+
+        const avatar = other.profileImage
+          ? `/api/image?key=${encodeURIComponent(other.profileImage)}`
+          : avatarByGender[other.gender ?? ""] ?? defaultAvatar;
+
 
         return (
           <div
             key={c._id}
             onClick={() => open(c._id)}
-            className={`flex gap-3 items-center px-4 py-3 cursor-pointer hover:bg-[#1a1a1a] ${
-              selectedId === c._id ? "bg-[#262626]" : ""
-            }`}
+            className={`flex gap-3 items-center px-4 py-3 cursor-pointer hover:bg-[#1a1a1a] ${selectedId === c._id ? "bg-[#262626]" : ""
+              }`}
           >
             {!isGroup && (
               <Image
@@ -71,7 +74,8 @@ export default function ConversationSideBar({
                 alt="avatar"
                 width={40}
                 height={40}
-                className="rounded-full shrink-0"
+                style={{ width: 40, height: 40 }}
+                className="rounded-full shrink-0 object-cover"
               />
             )}
             <div className="min-w-0 h-10 flex flex-col justify-center ml-2 flex sm:hidden md:flex">

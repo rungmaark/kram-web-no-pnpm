@@ -43,6 +43,8 @@ export default function ChatWindow({
   const [targetDisplayName, setTargetDisplayName] = useState<string | null>(
     null
   );
+  const [targetProfileImage, setTargetProfileImage] = useState<string | null>(null);
+  const [targetUsername, setTargetUsername] = useState<string | null>(null);
   const [targetGender, setTargetGender] = useState<string | null>(null);
   const [isGroup, setIsGroup] = useState(false);
   const [groupTitle, setGroupTitle] = useState<string | null>(null);
@@ -111,6 +113,8 @@ export default function ChatWindow({
         if (other) {
           setTargetDisplayName(other.displayName);
           setTargetGender(other.gender);
+          setTargetProfileImage(other.profileImage ?? null)
+          setTargetUsername(other.username ?? null)
         }
       });
   }, [conversationId, currentUserId]);
@@ -182,14 +186,23 @@ export default function ChatWindow({
 
           {!isGroup && (
             <Image
-              src={avatarByGender[targetGender ?? ""] ?? defaultAvatar}
+              src={
+                targetProfileImage
+                  ? `/api/image?key=${encodeURIComponent(targetProfileImage)}`
+                  : avatarByGender[targetGender ?? ""] ?? defaultAvatar
+              }
               width={32}
               height={32}
+              style={{ width: 32, height: 32 }}
               alt="avatar"
-              className="rounded-full ml-8" // 👈 ขยับให้ชิดขวาปุ่ม back
+              className="rounded-full ml-8 object-cover" // 👈 ขยับให้ชิดขวาปุ่ม back
             />
           )}
-          <span className="text-base font-semibold truncate">
+          <span className="text-base font-semibold truncate cursor-pointer"
+            onClick={() => {
+              if (targetUsername) router.push(`/profile/${targetUsername}`);
+            }}
+          >
             {isGroup ? groupTitle : targetDisplayName}
           </span>
         </div>
@@ -205,9 +218,8 @@ export default function ChatWindow({
               className={`flex ${isMine ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`px-4 py-2 rounded-2xl max-w-[70%] break-words ${
-                  isMine ? "bg-[#3797EF] text-white" : "bg-[#262626] text-white"
-                }`}
+                className={`px-4 py-2 rounded-2xl max-w-[70%] break-words ${isMine ? "bg-[#3797EF] text-white" : "bg-[#262626] text-white"
+                  }`}
               >
                 {m.text}
               </div>

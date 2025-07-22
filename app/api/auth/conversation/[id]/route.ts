@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
 
     const convo = await Conversation.findById(conversationId)
-      .populate("participants", "displayName gender")
+      .populate("participants", "displayName username gender profileImage")
       .populate({ path: "postId", select: "game", model: "Post" })
       .lean<IConversation & { post?: { game: string } }>();
 
