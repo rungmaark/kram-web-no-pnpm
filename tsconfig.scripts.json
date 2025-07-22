@@ -1,0 +1,15 @@
+// tsconfig.scripts.json
+
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "noEmit": false
+  },
+  "include": ["scripts/**/*"]
+}

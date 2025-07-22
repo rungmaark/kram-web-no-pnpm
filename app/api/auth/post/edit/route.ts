@@ -1,0 +1,43 @@
+// app/api/auth/post/edit/route.ts
+
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { connectToDatabase } from "@/lib/mongodb";
+import Post from "@/models/Post";
+
+export async function PUT(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { postId, text, location } = await req.json();
+
+  try {
+    await connectToDatabase();
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    if (post.userId.toString() !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // อัปเดตฟิลด์ต่าง ๆ
+    post.text = text;
+    post.location = location;
+
+    await post.save();
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
