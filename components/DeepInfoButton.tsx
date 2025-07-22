@@ -2,8 +2,6 @@
 
 "use client";
 
-import { Settings } from "lucide-react";
-
 export default function DeepInfoButton({ onOpen }: { onOpen: () => void }) {
   return (
     <button

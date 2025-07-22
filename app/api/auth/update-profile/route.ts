@@ -59,7 +59,6 @@ export async function PATCH(req: NextRequest) {
       careers: rawCareers,
       birthYear,
       rawProfileText,
-      concepts: rawConcepts,
     } = body;
 
     if (!userId)
@@ -117,12 +116,11 @@ export async function PATCH(req: NextRequest) {
       updatePayload.interests = interestsDraft;
     }
 
-    // concepts เป็น array ของ { interestName, category }
-    if (Array.isArray(rawConcepts) && rawConcepts.length > 0) {
-      updatePayload.interests = rawConcepts;
-    }
-    if (typeof rawProfileText === "string") {
-      updatePayload.rawProfileText = encrypt(rawProfileText);  // ② เข้ารหัสก่อนเซฟ
+    if (
+      typeof rawProfileText === "string" &&
+      rawProfileText.trim().length > 0
+    ) {
+      updatePayload.rawProfileText = encrypt(rawProfileText.trim());
     }
 
     if (rawCareers && Array.isArray(rawCareers)) {

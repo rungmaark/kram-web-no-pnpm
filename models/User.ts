@@ -13,7 +13,6 @@ export interface IUser extends Document {
   bio?: string;
   profileImage?: string;
   rawProfileText: { type: String; default: "" };
-  concepts: { type: [{ interestName: String; category: String }]; default: [] };
   instagram?: string;
   facebook?: string;
   twitter?: string;
@@ -59,7 +58,6 @@ const UserSchema = new Schema<IUser>({
   bio: String,
   profileImage: String,
   rawProfileText: { type: String, default: "" },
-  concepts: { type: [{ interestName: String, category: String }], default: [] },
   instagram: String,
   facebook: String,
   twitter: String,

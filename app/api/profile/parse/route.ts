@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     await UserModel.findByIdAndUpdate(session.user.id, {
       $set: {
         rawProfileText: encryptedText,
-        concepts: conceptDocs,
+        interests: conceptDocs,
       },
     });
     const user = await UserModel.findById(session.user.id).select(
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     if (user) await indexUser(extractIndexData(user));
 
     /* 4) Success */
-    return NextResponse.json({ concepts });
+    return NextResponse.json({ interests: concepts });
   } catch (err) {
     console.error("profile.parse error:", err);
     return NextResponse.json(

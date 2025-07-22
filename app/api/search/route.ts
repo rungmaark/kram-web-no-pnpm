@@ -93,9 +93,18 @@ export async function POST(req: NextRequest) {
     const relevanceResults = await Promise.all(
       users.map(async (user: any) => {
         try {
-          const decryptedText = user.rawProfileText
-            ? decrypt(user.rawProfileText)
-            : "";
+          let decryptedText = "";
+          if (user.rawProfileText) {
+            const stored = user.rawProfileText as string;
+            // ถ้าตรงรูป iv:ciphertext เท่านั้น
+            if (/^[0-9a-fA-F]+:[0-9a-fA-F]+$/.test(stored)) {
+              try {
+                decryptedText = decrypt(stored);
+              } catch {
+                decryptedText = "";
+              }
+            }
+          }
 
           const interests =
             user.interests?.map((i: any) => i.interestName || i) || [];

@@ -33,8 +33,8 @@ export default function DeepInfoPanel({
         body: JSON.stringify({ text: rawText }),
       });
       if (!res.ok) throw new Error("ไม่สามารถวิเคราะห์ได้ ลองใหม่อีกครั้ง");
-      const data: { concepts: string[] } = await res.json();
-      setChips(data.concepts.map((c) => ({ label: c, accepted: true })));
+      const data: { interests: string[] } = await res.json();
+      setChips(data.interests.map((c) => ({ label: c, accepted: true })));
     } catch (e: any) {
       setError(e.message);
     } finally {

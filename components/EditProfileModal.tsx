@@ -137,7 +137,7 @@ export default function EditProfileModal({
     initialProfileImage ?? null
   );
   const [rawProfileText, setRawProfileText] = useState<string>("");
-  const [concepts, setConcepts] = useState<{ interestName: string; category: string }[]>([]);
+  const [interestsState, setInterestsState] = useState(interests);
   const currentYear = new Date().getFullYear();
   const rangeYears = [...Array(100)].map((_, i) => currentYear - i);
 
@@ -182,13 +182,21 @@ export default function EditProfileModal({
   }
 
   const handleDeepInfoSave = async () => {
-    const [raw, parsed] = await Promise.all([
-      fetch("/api/profile/raw").then((res) => res.json()),
-      fetch("/api/profile/parsed").then((res) => res.json()),
-    ]);
-    // สมมติ parsed.interests: [{interestName, category}, …]
-    setConcepts(Array.isArray(parsed.interests) ? parsed.interests : []);
-    setRawProfileText(typeof raw.rawText === "string" ? raw.rawText : "");
+    try {
+      const res = await fetch("/api/profile/raw", { credentials: "include" });
+      if (!res.ok) throw new Error("ไม่สามารถโหลดข้อมูลได้");
+      const { rawText, interests } = await res.json();
+      // อัปเดต rawProfileText
+      setRawProfileText(typeof rawText === "string" ? rawText : "");
+      // interests เป็น string[] → แปลงเป็น {interestName, category}
+      const docs = Array.isArray(interests)
+        ? interests.map((i) => ({ interestName: i, category: "custom" }))
+        : [];
+      setInterestsState(docs);
+    } catch (e: any) {
+      console.error("handleDeepInfoSave error:", e);
+      setError(e.message || "เกิดข้อผิดพลาด");
+    }
   };
 
 
@@ -244,7 +252,7 @@ export default function EditProfileModal({
         linkedin,
         socialList,
         profileImage: uploadedKey,
-        interests: concepts,
+        interests: interestsState,
         rawProfileText,
         birthYear:
           typeof birthYear === "string"
