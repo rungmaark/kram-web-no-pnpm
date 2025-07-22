@@ -9,9 +9,11 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function DeepInfoPanel({
   open,
   onClose,
+  onSave,
 }: {
   open: boolean;
   onClose: () => void;
+  onSave?: () => void;
 }) {
   const [rawText, setRawText] = useState<string>("");
   type Chip = { label: string; accepted: boolean };
@@ -27,6 +29,7 @@ export default function DeepInfoPanel({
       const res = await fetch("/api/profile/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ text: rawText }),
       });
       if (!res.ok) throw new Error("ไม่สามารถวิเคราะห์ได้ ลองใหม่อีกครั้ง");
@@ -43,15 +46,20 @@ export default function DeepInfoPanel({
     setLoading(true);
     try {
       const confirmed = chips.filter((c) => c.accepted).map((c) => c.label);
-      console.log("✅ interests ส่งเข้า API =", confirmed);
-      await fetch("/api/profile/confirm", {
+      const res = await fetch("/api/profile/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rawText, interests: confirmed }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "ไม่สามารถบันทึกข้อมูลได้");
+      }
+      // สรุปว่าเซฟสำเร็จแล้วค่อยปิด panel
+      onSave?.();
       onClose();
-    } catch (e) {
-      setError("เกิดข้อผิดพลาดในการบันทึก");
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -68,18 +76,41 @@ export default function DeepInfoPanel({
 
   useEffect(() => {
     if (open) {
-      setLoading(true);
-      setError(null);
-      fetch("/api/profile/raw")
-        .then((res) => res.json())
-        .then((data) => {
-          if (typeof data.rawText === "string") {
-            setRawText(data.rawText);
+      // โหลดข้อมูลจาก server ด้วย async/await
+      (async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch("/api/profile/raw", {
+            credentials: "include",        // ให้ส่ง cookies ไปด้วย
+            headers: { "Accept": "application/json" },
+          });
+          // ล็อก status และ body มา debug
+          console.log("GET /api/profile/raw status:", res.status);
+          let body: any = {};
+          try { body = await res.json(); console.log("GET /api/profile/raw body:", body); } catch { }
+
+          if (!res.ok) {
+            // ใช้ข้อความจาก server ถ้ามี
+            throw new Error(body.error || `HTTP ${res.status}`);
           }
-        })
-        .catch(() => setError("โหลดข้อมูลไม่สำเร็จ"))
-        .finally(() => setLoading(false));
+
+          // สำเร็จ → นำข้อมูลมาเซ็ต
+          setRawText(typeof body.rawText === "string" ? body.rawText : "");
+          if (Array.isArray(body.interests)) {
+            setChips(body.interests.map((label: string) => ({ label, accepted: true })));
+          } else {
+            setChips([]);
+          }
+        } catch (err: any) {
+          console.error("DeepInfoPanel load error:", err);
+          setError(err.message || "โหลดข้อมูลไม่สำเร็จ");
+        } finally {
+          setLoading(false);
+        }
+      })();
     } else {
+      // ปิด panel → reset ทั้งหมด
       setRawText("");
       setChips([]);
       setError(null);
@@ -110,14 +141,14 @@ export default function DeepInfoPanel({
             <textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="เล่าเกี่ยวกับตัวคุณ สิ่งที่ชอบ เป้าหมายในชีวิต งานอดิเรก ฯลฯ"
+              placeholder="เล่าเกี่ยวกับตัวคุณ คุณคือใคร สิ่งที่ชอบ สถานที่คุณชอบไป งานอดิเรก ฯลฯ"
               className="w-full h-40 resize-none p-3 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
             />
 
             <div className="flex items-center gap-2 mt-3">
               <button
                 onClick={analyze}
-                disabled={loading || !rawText.trim()}
+                disabled={loading}
                 className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 flex items-center cursor-pointer"
               >
                 {loading && <Loader2 className="animate-spin mr-2" size={16} />}
@@ -144,11 +175,10 @@ export default function DeepInfoPanel({
                             )
                           )
                         }
-                        className={`px-3 py-1 rounded-full border cursor-pointer flex items-center text-sm select-none transition-all ${
-                          chip.accepted
-                            ? "bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900 dark:text-indigo-200"
-                            : "bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-300 dark:border-zinc-600"
-                        }`}
+                        className={`px-3 py-1 rounded-full border cursor-pointer flex items-center text-sm select-none transition-all ${chip.accepted
+                          ? "bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900 dark:text-indigo-200"
+                          : "bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-300 dark:border-zinc-600"
+                          }`}
                       >
                         {chip.label}
                         {chip.accepted ? (

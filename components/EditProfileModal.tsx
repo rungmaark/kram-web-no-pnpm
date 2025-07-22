@@ -10,7 +10,6 @@ import {
 } from "@/lib/fetchCitySuggestions";
 import { SocialType } from "@/types/SocialType";
 import DeepInfoPanel from "@/components/DeepInfoPanel";
-import { useProfileDraft } from "@/lib/profileDraftStore";
 import { useSession } from "next-auth/react";
 import { useAuth } from "@/lib/auth-context";
 import { SwalWithTheme } from "@/lib/swal";
@@ -50,8 +49,6 @@ interface EditProfileModalProps {
 
   /* interests */
   interests: { interestName: string; category: string }[];
-  /* careers */
-  careers: string[];
 }
 
 function TabSwitcher({
@@ -69,11 +66,10 @@ function TabSwitcher({
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`px-4 py-2 -mb-px font-semibold transition-colors duration-200 ease-in-out ${
-            activeTab === tab
-              ? "border-b-2 border-indigo-600 text-indigo-600 cursor-pointer"
-              : "text-gray-500 hover:text-indigo-600 cursor-pointer"
-          }`}
+          className={`px-4 py-2 -mb-px font-semibold transition-colors duration-200 ease-in-out ${activeTab === tab
+            ? "border-b-2 border-indigo-600 text-indigo-600 cursor-pointer"
+            : "text-gray-500 hover:text-indigo-600 cursor-pointer"
+            }`}
         >
           {tab}
         </button>
@@ -107,7 +103,6 @@ export default function EditProfileModal({
   MBTI: initialMBTI,
   relationshipStatus: initialRelationshipStatus,
   interests,
-  careers,
   birthYear: initialBirthYear,
   profileImage: initialProfileImage,
   onUpdateSuccess,
@@ -141,6 +136,8 @@ export default function EditProfileModal({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(
     initialProfileImage ?? null
   );
+  const [rawProfileText, setRawProfileText] = useState<string>("");
+  const [concepts, setConcepts] = useState<{ interestName: string; category: string }[]>([]);
   const currentYear = new Date().getFullYear();
   const rangeYears = [...Array(100)].map((_, i) => currentYear - i);
 
@@ -184,22 +181,16 @@ export default function EditProfileModal({
     rangeYears.sort((a, b) => b - a); // เรียงใหม่จากมากไปน้อย
   }
 
-  const {
-    interests: draftInterests,
-    careers: draftCareer,
-    clear,
-    setInterests,
-    setCareer, // ✅ เพิ่มบรรทัดนี้
-  } = useProfileDraft();
-
-  const handleDeepInfoSave = (payload: {
-    interests: { interestName: string; category: string }[];
-    careers: string[];
-  }) => {
-    clear();
-    setInterests(payload.interests);
-    setCareer(payload.careers);
+  const handleDeepInfoSave = async () => {
+    const [raw, parsed] = await Promise.all([
+      fetch("/api/profile/raw").then((res) => res.json()),
+      fetch("/api/profile/parsed").then((res) => res.json()),
+    ]);
+    // สมมติ parsed.interests: [{interestName, category}, …]
+    setConcepts(Array.isArray(parsed.interests) ? parsed.interests : []);
+    setRawProfileText(typeof raw.rawText === "string" ? raw.rawText : "");
   };
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -231,11 +222,6 @@ export default function EditProfileModal({
       setImagePreviewUrl(data.url); // <--- ดูรูปทันที (proxy)
     }
 
-    const interestToUpdate =
-      draftInterests.length > 0 ? draftInterests : interests;
-
-    const careerToUpdate = draftCareer.length > 0 ? draftCareer : careers;
-
     /* ---------- ② PATCH โปรไฟล์ ---------- */
     const res = await fetch("/api/auth/update-profile", {
       method: "PATCH",
@@ -258,8 +244,8 @@ export default function EditProfileModal({
         linkedin,
         socialList,
         profileImage: uploadedKey,
-        interests: interestToUpdate,
-        careers: careerToUpdate,
+        interests: concepts,
+        rawProfileText,
         birthYear:
           typeof birthYear === "string"
             ? parseInt(birthYear)
@@ -487,11 +473,10 @@ export default function EditProfileModal({
                 <button
                   key={type}
                   onClick={() => setMBTI(type)}
-                  className={`p-2 rounded ${
-                    MBTI === type
-                      ? "bg-indigo-500 text-white"
-                      : "bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white"
-                  }`}
+                  className={`p-2 rounded ${MBTI === type
+                    ? "bg-indigo-500 text-white"
+                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white"
+                    }`}
                 >
                   {type}
                 </button>
@@ -564,6 +549,7 @@ export default function EditProfileModal({
             <DeepInfoPanel
               open={openDeepInfo}
               onClose={() => setOpenDeepInfo(false)}
+              onSave={handleDeepInfoSave}
             />
           </>
         );

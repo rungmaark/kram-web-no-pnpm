@@ -12,8 +12,8 @@ export interface IUser extends Document {
   gender?: string;
   bio?: string;
   profileImage?: string;
-  rawProfileText: { type: String; select: false }; // ข้อความดิบ (เข้ารหัสแล้ว)
-  concepts: { type: [String]; default: [] }; // topics ที่ AI สกัด
+  rawProfileText: { type: String; default: "" };
+  concepts: { type: [{ interestName: String; category: String }]; default: [] };
   instagram?: string;
   facebook?: string;
   twitter?: string;
@@ -58,8 +58,8 @@ const UserSchema = new Schema<IUser>({
   gender: String,
   bio: String,
   profileImage: String,
-  rawProfileText: { type: String, select: false },
-  concepts: { type: [String], default: [] },
+  rawProfileText: { type: String, default: "" },
+  concepts: { type: [{ interestName: String, category: String }], default: [] },
   instagram: String,
   facebook: String,
   twitter: String,

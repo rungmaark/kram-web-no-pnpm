@@ -16,6 +16,12 @@ export async function POST(req: NextRequest) {
 
     console.log(`🧠 Pure Semantic Search for: "${query}"`);
 
+    // ── Pre-normalize “SPU” / “ม.ศรีปทุม” ─────────────────────
+    const normalizedQuery = query
+      .replace(/SPU/gi, "มหาวิทยาลัยศรีปทุม")
+      .replace(/ม\.?ศรีปทุม/gi, "มหาวิทยาลัยศรีปทุม");
+    console.log(`ℹ️ Normalized query: "${normalizedQuery}"`);
+
     await mongoose.connect(process.env.MONGODB_URI!);
 
     // 1. อ่าน users ทั้งหมด
@@ -28,12 +34,14 @@ export async function POST(req: NextRequest) {
     console.log(`🔍 Total users loaded: ${users.length}`);
 
     // 2. สกัด concepts ดูว่ามีคำสั่งหา gender เฉพาะหรือไม่ (male,female,gay,lesbian,bisexual,transgender)
-    const { primaryConcepts } = await extractSemanticConcepts(query);
+    const { primaryConcepts } = await extractSemanticConcepts(normalizedQuery);
     const genderMap: Record<string, string> = {
       male: "male",
       ชาย: "male",
+      หนุ่ม: "male",
       female: "female",
       หญิง: "female",
+      สาว: "female",
       gay: "gay",
       เกย์: "gay",
       lesbian: "lesbian",
@@ -56,6 +64,31 @@ export async function POST(req: NextRequest) {
       console.log(`🔍 After gender filter: ${users.length}`);
     }
 
+    // 2.1 สกัดสถานะความสัมพันธ์จาก primaryConcepts
+    const statusMap: Record<string, string> = {
+      single: "single",
+      โสด: "single",
+      ไม่มีแฟน: "single",
+      taken: "taken",
+      แฟน: "taken",
+      ไม่โสด: "taken",
+      มีเจ้าของ: "taken",
+      married: "married",
+      แต่งงาน: "married",
+      fwb: "fwb",
+    };
+    const matchedStatuses = Array.from(
+      new Set(
+        primaryConcepts.map((c) => statusMap[c.toLowerCase()]).filter(Boolean)
+      )
+    );
+    if (matchedStatuses.length > 0) {
+      users = users.filter((u) =>
+        matchedStatuses.includes(u.relationshipStatus?.toLowerCase() || "")
+      );
+      console.log(`🔍 After relationshipStatus filter: ${users.length}`);
+    }
+
     // 3. คำนวณ semantic score ทีละ user
     const relevanceResults = await Promise.all(
       users.map(async (user: any) => {
@@ -72,14 +105,26 @@ export async function POST(req: NextRequest) {
             bio: user.bio || "",
             rawProfileText: decryptedText,
             gender: user.gender,
+            displayName: user.displayName,
+            username: user.username,
+            mbti: user.MBTI,
+            birthYear: user.birthYear,
             relationshipStatus: user.relationshipStatus,
             locationTokens: user.locationTokens,
           };
 
-          const semanticScore = await calculateEnhancedSemanticRelevance(
-            query,
+          let semanticScore = await calculateEnhancedSemanticRelevance(
+            normalizedQuery,
             userProfile
           );
+
+          if (
+            user.displayName &&
+            user.displayName.toLowerCase().includes(query.toLowerCase())
+          ) {
+            semanticScore += 0.5; // หรือจะใช้ Math.min(1, semanticScore + 0.3)
+          }
+
           return { user, semanticScore };
         } catch {
           return null;

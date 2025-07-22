@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import { normalizeStatus } from "@/lib/normalizeStatus";
 import { makeLocationTokens } from "@/lib/utils/locations";
+import { encrypt } from "@/lib/encrypt";
 
 function sanitizeInterests(
   raw: any
@@ -54,10 +55,11 @@ export async function PATCH(req: NextRequest) {
       lon,
       MBTI,
       relationshipStatus,
-      socialList,
       interests: rawInterests,
       careers: rawCareers,
       birthYear,
+      rawProfileText,
+      concepts: rawConcepts,
     } = body;
 
     if (!userId)
@@ -96,7 +98,6 @@ export async function PATCH(req: NextRequest) {
       country: country?.trim() || null,
       MBTI,
       relationshipStatus: normalizeStatus(relationshipStatus),
-      socialList,
       birthYear: typeof birthYear === "number" ? birthYear : null,
     };
 
@@ -114,6 +115,14 @@ export async function PATCH(req: NextRequest) {
 
     if (rawInterests && interestsDraft.length > 0) {
       updatePayload.interests = interestsDraft;
+    }
+
+    // concepts เป็น array ของ { interestName, category }
+    if (Array.isArray(rawConcepts) && rawConcepts.length > 0) {
+      updatePayload.interests = rawConcepts;
+    }
+    if (typeof rawProfileText === "string") {
+      updatePayload.rawProfileText = encrypt(rawProfileText);  // ② เข้ารหัสก่อนเซฟ
     }
 
     if (rawCareers && Array.isArray(rawCareers)) {

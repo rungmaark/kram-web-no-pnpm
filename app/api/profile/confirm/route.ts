@@ -54,9 +54,8 @@ export async function POST(req: NextRequest) {
     { _id: session.user.id },
     {
       $set: {
-        rawProfileText: encrypt(rawText),
-        concepts, // 30 คำเดิม
-        interests: pickedDocs, // เขียนทับทั้ง array เลย
+        rawProfileText: encrypt(rawText), // เข้ารหัสก่อนเก็บ
+        interests: pickedDocs,
       },
     },
     { runValidators: true }

@@ -105,13 +105,17 @@ export async function POST(req: NextRequest) {
     const encryptedText = encrypt(text);
 
     await connectToDatabase();
+    // แปลงจาก string[] → Array<{ interestName, category }>
+    const conceptDocs = concepts.map((kw) => ({
+      interestName: kw,
+      category: "custom",
+    }));
     await UserModel.findByIdAndUpdate(session.user.id, {
       $set: {
         rawProfileText: encryptedText,
-        concepts,
+        concepts: conceptDocs,
       },
     });
-
     const user = await UserModel.findById(session.user.id).select(
       "+rawProfileText"
     );

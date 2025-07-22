@@ -33,6 +33,16 @@ TASK:
 3. ถ้า query พูดถึง “หญิงรักหญิง” หรือ “ผู้หญิงรักผู้หญิง” ให้ map เป็น ["หญิงรักหญิง","lesbian","เลสเบี้ยน"].
 4. ถ้า query พูดถึง “สองเพศ” ให้ map เป็น ["สองเพศ","bisexual","ไบเซ็กชวล"].
 5. ถ้า query พูดถึง “ข้ามเพศ” ให้ map เป็น ["ข้ามเพศ","transgender","ทรานส์เจนเดอร์"].
+ุ6. ถ้า query พูดถึง “ไบ” ให้ map เป็น ["ไบ","bisexual","ไบเซ็กชวล"].
+7. ถ้า query พูดถึง “หนุ่ม” ให้ map เป็น ["หนุ่ม","male","ชาย"].
+8. ถ้า query พูดถึง “สาว” ให้ map เป็น ["สาว","female","หญิง"].
+9. ถ้า query พูดถึง “มีแฟน”, “มีเจ้าของ”, “คนมีแฟน” ให้ map เป็น ["taken","แฟน", "ไม่โสด"].
+10. ถ้า query พูดถึง “โสด” หรือ “ไม่มีแฟน” ให้ map เป็น ["single","ไม่มีแฟน","โสด"].
+11. ถ้า query พูดถึง “แต่งงาน”, “married” ให้ map เป็น ["married","แต่งงาน"].
+12. ถ้า query พูดถึง “fwb” ให้ map เป็น ["fwb"].
+13. ถ้า query พูดถึง “INTP”, “ENFP”, “ISTJ” ฯลฯ ให้ map เป็น [MBTI type, "mbti", คำอธิบายภาษาไทย ถ้ามี เช่น "นักคิด", "นักวิเคราะห์"]
+14. ถ้า query พูดถึง “SPU” ให้ map เป็น ["SPU","มหาวิทยาลัยศรีปทุม","Sripatum University"].
+15. ถ้า query พูดถึง “ม.ศรีปทุม” ให้ map เป็น ["ม.ศรีปทุม","มหาวิทยาลัยศรีปทุม","Sripatum University"]
 
 ORIENTATION NORMALIZATION: 
 – \"ชายรักชาย\", \"ผู้ชายรักผู้ชาย\" → gay, เกย์
@@ -365,17 +375,65 @@ export async function calculateEnhancedSemanticRelevance(
   query: string,
   userProfile: {
     interests: string[];
+    displayName: string;
+    username: string;
     bio?: string;
     rawProfileText?: string;
     gender?: string;
+    birthYear?: number;
+    mbti?: string;
     relationshipStatus?: string;
     locationTokens?: string[];
   }
 ): Promise<number> {
   try {
+    // ── Handle combined filters: อายุ (เลขปีเกิด & อายุ), สถาน ─────────────────
+    let cleanedQuery = query;
+    const ageMatch = query.match(/อายุ\s*(\d{1,3})/);
+    if (ageMatch && userProfile.birthYear) {
+      const queryAge = parseInt(ageMatch[1], 10);
+      const currentYear = new Date().getFullYear(); // 2025
+      // ถ้าไม่ตรงปีเกิดที่คำนวณได้ ให้ตัดทิ้งทันที
+      if (userProfile.birthYear !== currentYear - queryAge) {
+        return 0.0;
+      }
+      // ลบเงื่อนไขอายุออก เพื่อประมวลผลเงื่อนไขอื่นต่อ
+      cleanedQuery = cleanedQuery.replace(ageMatch[0], "").trim();
+    }
+
+    // ── Handle birth year filter: ถ้ามีเลข 4 หลัก เช่น 2007 ─────────────────
+    const yearMatch = query.match(/\b(19|20)\d{2}\b/);
+    if (yearMatch && userProfile.birthYear) {
+      const queryYear = parseInt(yearMatch[0], 10);
+      if (userProfile.birthYear !== queryYear) {
+        return 0.0;
+      }
+      cleanedQuery = cleanedQuery.replace(yearMatch[0], "").trim();
+    }
+
+    // ── Handle MBTI filter: ถ้าคิวรี่มี MBTI type (เช่น INTP, ENTP) ─────────────────
+    const mbtiMatch = cleanedQuery.match(
+      /\b(INTP|ENTP|ENFP|ENFJ|ISTJ|ISFJ|ISTP|ISFP|INTJ|INFJ|ESTJ|ESFJ|ESTP|ESFP)\b/i
+    );
+    if (mbtiMatch && userProfile.mbti) {
+      const queryMbti = mbtiMatch[1].toUpperCase();
+      if (userProfile.mbti.toUpperCase() !== queryMbti) {
+      // MBTI ไม่ตรงกับ query → ไม่ต้องไปเรียก AI เพิ่มเติม
+        return 0.0;
+      }
+      // ลบ MBTI จาก cleanedQuery ก่อนส่งให้ AI วิเคราะห์
+      cleanedQuery = cleanedQuery
+        .replace(new RegExp(mbtiMatch[0], "i"), "")
+        .trim();
+    }
+
     const userContent = [
       ...userProfile.interests,
+      userProfile.displayName || "",
+      userProfile.username || "",
       userProfile.bio || "",
+      userProfile.birthYear && `ปีเกิด: ${userProfile.birthYear}`,
+      userProfile.mbti && `${userProfile.mbti}`,
       userProfile.rawProfileText || "",
       userProfile.gender || "",
       userProfile.relationshipStatus &&
@@ -433,9 +491,8 @@ async function performComprehensiveSemanticMatch(
           role: "system",
           content: `You are an ultra-precise Thai-English semantic matcher for social search.
 
-RULE for orientation:
-- ถ้า primaryConcepts มี "gay" หรือ "เกย์" ให้ถือว่า match ก็ต่อเมื่อ userContent มี "เพศ: ชาย"
-- ถ้า primaryConcepts มี "lesbian" หรือ "เลสเบี้ยน" ให้ match ก็ต่อเมื่อ userContent มี "เพศ: หญิง"
+RULE:
+- ถ้า primaryConcepts มีค่าเป็น MBTI type (เช่น "INTP", "ENFP") ให้แมทช์ก็ต่อเมื่อ userContent มี string ตรงกัน
 
 TASK: Analyze if user profile matches query with extreme precision.
 
@@ -459,6 +516,12 @@ CRITICAL RULES FOR HIGH PRECISION:
    - "ชอบคอม" = "ชอบคอมพิวเตอร์" = "like computers"
    - "เกม" = "เกมส์" = "gaming"
    - "มือถือ" = "โทรศัพท์" = "phone"
+   - "ม.ศรีปทุม" = "มหาวิทยาลัยศรีปทุม" = "Sripatum University"
+   - "SPU" = "มหาวิทยาลัยศรีปทุม" = "Sripatum University"
+   - "มก." = "มหาวิทยาลัยเกษตรศาสตร์"
+   - "มจธ." = "King Mongkut's University of Technology Thonburi"
+7. Place-based matches require **explicit mention of the location** (e.g., “ม.ศรีปทุม” or “ศรีปทุม”) to be considered a match
+8. If query mentions a university, then a profile that doesn't explicitly mention that university = NO_MATCH
 
 EXAMPLES:
 
@@ -594,6 +657,10 @@ export async function calculateCombinedStrictScore(
   userProfile: {
     interests: string[];
     bio?: string;
+    username: string;
+    displayName: string;
+    mbti: string;
+    birthYear: number;
     rawProfileText?: string;
   }
 ): Promise<number> {
@@ -637,6 +704,10 @@ export async function calculateUltraStrictRelevance(
   userProfile: {
     interests: string[];
     bio?: string;
+    username: string;
+    displayName: string;
+    mbti: string;
+    birthYear: number;
     rawProfileText?: string;
   }
 ): Promise<number> {

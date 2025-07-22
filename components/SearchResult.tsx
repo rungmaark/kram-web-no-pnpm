@@ -168,7 +168,7 @@ export default function SearchResult({ searchText }: { searchText: string }) {
                 className="text-sm text-center text-gray-600 dark:text-gray-400 line-clamp-3 flex-grow /* ② flex-grow ดันพื้นที่ */
            mt-2 mb-4"
               >
-                {user.rawProfileText || user.bio || "ยังไม่มีข้อมูลส่วนตัว"}
+                {user.bio || ""}
               </p>
 
               {/* button ----------------------------------------------------------- */}
