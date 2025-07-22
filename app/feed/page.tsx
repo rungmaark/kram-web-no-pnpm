@@ -136,7 +136,6 @@ export default function FeedPage() {
             openedPostId={openedPostId}
             setOpenedPostId={setOpenedPostId}
             universities={universities}
-            careers={careers}
             provinces={provinces}
           />
         </div>

@@ -165,7 +165,6 @@ export default function Profile() {
             linkedin={LinkedIn}
             MBTI={MBTI}
             relationshipStatus={relationshipStatus}
-            careers={careers}
             birthYear={birthYear}
           />
         );
@@ -413,7 +412,6 @@ export default function Profile() {
           MBTI={MBTI}
           relationshipStatus={relationshipStatus}
           interests={interests}
-          careers={careers}
           birthYear={birthYear}
           profileImage={profileImage}
           onUpdateSuccess={(
