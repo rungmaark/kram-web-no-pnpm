@@ -39,6 +39,7 @@ export default function Profile() {
     null
   );
   const [interests, setInterests] = useState<any[]>([]);
+  const [rawProfileText, setRawProfileText] = useState<string | null>(null);
   const [careers, setCareers] = useState<string[]>([]);
   const [birthYear, setBirthYear] = useState<number | null>(null);
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -56,6 +57,21 @@ export default function Profile() {
   const [showModal, setShowModal] = useState<"followers" | "following" | null>(
     null
   );
+
+  // ดึงค่า decrypted rawProfileText ทันทีที่เปิด modal
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    (async () => {
+      try {
+        const res = await fetch("/api/profile/raw", { credentials: "include" });
+        if (!res.ok) throw new Error("โหลดข้อมูลลึกไม่สำเร็จ");
+        const { rawText } = await res.json();
+        setRawProfileText(rawText);
+      } catch (e: any) {
+        console.error("decrypt rawProfileText error:", e);
+      }
+    })();
+  }, [isEditModalOpen])
 
   useEffect(() => {
     async function fetchSession() {
@@ -236,24 +252,21 @@ export default function Profile() {
 
   return (
     <div
-      className={`min-h-screen lg:px-10 xl:px-50 bg-gray-100 dark:bg-midnight ${
-        isEditModalOpen ? "h-screen overflow-hidden" : ""
-      }`}
+      className={`min-h-screen lg:px-10 xl:px-50 bg-gray-100 dark:bg-midnight ${isEditModalOpen ? "h-screen overflow-hidden" : ""
+        }`}
     >
       {isEditModalOpen ? null : <Navbar />}
       <div className="">
         <div className="flex justify-center lg:gap-1">
           <div
-            className={`${
-              isEditModalOpen ? "hidden" : "flex"
-            } profile-con w-full max-w-[1160px] flex-col mt-5 pb-5 rounded rounded-lg`}
+            className={`${isEditModalOpen ? "hidden" : "flex"
+              } profile-con w-full max-w-[1160px] flex-col mt-5 pb-5 rounded rounded-lg`}
           >
             <div className="flex flex-col bg-white dark:bg-black pt-5">
               <div className="flex px-5 sm:px-10 mb-10 flex-wrap lg:flex-nowrap">
                 <div
-                  className={`flex flex-col ${
-                    isEditModalOpen ? "hidden" : ""
-                  } mr-6 mb-4 lg:mb-0`}
+                  className={`flex flex-col ${isEditModalOpen ? "hidden" : ""
+                    } mr-6 mb-4 lg:mb-0`}
                 >
                   <img
                     src={profileImage || getOwlImageByGender(gender)}
@@ -328,11 +341,10 @@ export default function Profile() {
                 ) : (
                   <div className="flex gap-2 mr-2.5">
                     <button
-                      className={`${
-                        isFollowing
-                          ? "bg-gray-100 text-gray-700 dark:text-gray-50 dark:bg-gray-800"
-                          : "bg-indigo-400 text-gray-50 dark:bg-indigo-500"
-                      } px-4 py-2 rounded-md font-semibold hover:opacity-80 transition-colors duration-200 cursor-pointer`}
+                      className={`${isFollowing
+                        ? "bg-gray-100 text-gray-700 dark:text-gray-50 dark:bg-gray-800"
+                        : "bg-indigo-400 text-gray-50 dark:bg-indigo-500"
+                        } px-4 py-2 rounded-md font-semibold hover:opacity-80 transition-colors duration-200 cursor-pointer`}
                       onClick={async () => {
                         try {
                           const res = await fetch("/api/auth/follow/toggle", {
@@ -375,11 +387,10 @@ export default function Profile() {
                 {["Interest", "Post", "Info"].map((tab) => (
                   <div
                     key={tab}
-                    className={`border-b-2 px-4 font-semibold cursor-pointer transition-colors duration-200 ${
-                      activeTab === tab
-                        ? "border-black text-black dark:text-gray-50 dark:border-gray-50"
-                        : "border-gray-400 text-gray-400 dark:text-gray-500 dark:border-gray-500"
-                    }`}
+                    className={`border-b-2 px-4 font-semibold cursor-pointer transition-colors duration-200 ${activeTab === tab
+                      ? "border-black text-black dark:text-gray-50 dark:border-gray-50"
+                      : "border-gray-400 text-gray-400 dark:text-gray-500 dark:border-gray-500"
+                      }`}
                     onClick={() => setActiveTab(tab)}
                   >
                     {tab}
@@ -412,6 +423,7 @@ export default function Profile() {
           MBTI={MBTI}
           relationshipStatus={relationshipStatus}
           interests={interests}
+          rawProfileText={rawProfileText}
           birthYear={birthYear}
           profileImage={profileImage}
           onUpdateSuccess={(

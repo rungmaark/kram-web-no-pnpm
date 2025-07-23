@@ -49,6 +49,7 @@ interface EditProfileModalProps {
 
   /* interests */
   interests: { interestName: string; category: string }[];
+  rawProfileText: string | null;
 }
 
 function TabSwitcher({
@@ -89,6 +90,8 @@ function toKey(value: string | null) {
     : value;
 }
 
+
+
 export default function EditProfileModal({
   onClose,
   displayName: initialDisplayName,
@@ -103,6 +106,7 @@ export default function EditProfileModal({
   MBTI: initialMBTI,
   relationshipStatus: initialRelationshipStatus,
   interests,
+  rawProfileText: initialRawProfileText,
   birthYear: initialBirthYear,
   profileImage: initialProfileImage,
   onUpdateSuccess,
@@ -181,23 +185,54 @@ export default function EditProfileModal({
     rangeYears.sort((a, b) => b - a); // เรียงใหม่จากมากไปน้อย
   }
 
+  // 🔐 ตรงนี้เลย: decrypt ทันทีที่ mount modal
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/profile/raw", {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("โหลดข้อมูลลึกไม่สำเร็จ");
+        const { rawText, interests } = await res.json();
+        setRawProfileText(rawText);
+        setInterestsState(
+          Array.isArray(interests)
+            ? interests.map((i) => ({ interestName: i, category: "custom" }))
+            : []
+        );
+      } catch (e: any) {
+        console.error("decrypt rawProfileText error:", e);
+      }
+    })();
+  }, []); // ทำครั้งเดียวตอน modal mount
+
   const handleDeepInfoSave = async () => {
+    setOpenDeepInfo(false);
+  };
+
+  // ① ฟังชั่นเปิด DeepInfoPanel พร้อม decrypt
+  async function openDeepInfoPanel() {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/profile/raw", { credentials: "include" });
-      if (!res.ok) throw new Error("ไม่สามารถโหลดข้อมูลได้");
-      const { rawText, interests } = await res.json();
-      // อัปเดต rawProfileText
-      setRawProfileText(typeof rawText === "string" ? rawText : "");
-      // interests เป็น string[] → แปลงเป็น {interestName, category}
-      const docs = Array.isArray(interests)
-        ? interests.map((i) => ({ interestName: i, category: "custom" }))
-        : [];
-      setInterestsState(docs);
+      if (!res.ok) throw new Error("โหลดข้อมูลลึกไม่สำเร็จ");
+      const { rawText: decrypted, interests } = await res.json();
+      setRawProfileText(typeof decrypted === "string" ? decrypted : "");
+      // interest เป็น string[] → แปลงเป็น shape เดิม
+      setInterestsState(
+        Array.isArray(interests)
+          ? interests.map((i) => ({ interestName: i, category: "custom" }))
+          : []
+      );
+      setOpenDeepInfo(true);
     } catch (e: any) {
-      console.error("handleDeepInfoSave error:", e);
-      setError(e.message || "เกิดข้อผิดพลาด");
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+
 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -551,13 +586,15 @@ export default function EditProfileModal({
         return (
           <>
             <div className="flex">
-              <DeepInfoButton onOpen={() => setOpenDeepInfo(true)} />
+              <DeepInfoButton onOpen={openDeepInfoPanel} />
             </div>
 
             <DeepInfoPanel
               open={openDeepInfo}
               onClose={() => setOpenDeepInfo(false)}
               onSave={handleDeepInfoSave}
+              defaultRawText={rawProfileText}
+              defaultInterests={interestsState.map(i => i.interestName)}
             />
           </>
         );

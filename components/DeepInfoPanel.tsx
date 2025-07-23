@@ -10,14 +10,20 @@ export default function DeepInfoPanel({
   open,
   onClose,
   onSave,
+  defaultRawText,
+  defaultInterests,
 }: {
   open: boolean;
   onClose: () => void;
   onSave?: () => void;
+  defaultRawText?: string;
+  defaultInterests?: string[];
 }) {
-  const [rawText, setRawText] = useState<string>("");
+  const [rawText, setRawText] = useState<string>(defaultRawText ?? "");
   type Chip = { label: string; accepted: boolean };
-  const [chips, setChips] = useState<Chip[]>([]);
+  const [chips, setChips] = useState<Chip[]>(
+    (defaultInterests ?? []).map(label => ({ label, accepted: true }))
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,56 +73,14 @@ export default function DeepInfoPanel({
 
   useEffect(() => {
     if (!open) {
-      setRawText("");
-      setChips([]);
+      setRawText(defaultRawText ?? "");
+      setChips(
+        (defaultInterests ?? []).map(label => ({ label, accepted: true }))
+      );
       setError(null);
       setLoading(false);
     }
-  }, [open]);
-
-  useEffect(() => {
-    if (open) {
-      // โหลดข้อมูลจาก server ด้วย async/await
-      (async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const res = await fetch("/api/profile/raw", {
-            credentials: "include",        // ให้ส่ง cookies ไปด้วย
-            headers: { "Accept": "application/json" },
-          });
-          // ล็อก status และ body มา debug
-          console.log("GET /api/profile/raw status:", res.status);
-          let body: any = {};
-          try { body = await res.json(); console.log("GET /api/profile/raw body:", body); } catch { }
-
-          if (!res.ok) {
-            // ใช้ข้อความจาก server ถ้ามี
-            throw new Error(body.error || `HTTP ${res.status}`);
-          }
-
-          // สำเร็จ → นำข้อมูลมาเซ็ต
-          setRawText(typeof body.rawText === "string" ? body.rawText : "");
-          if (Array.isArray(body.interests)) {
-            setChips(body.interests.map((label: string) => ({ label, accepted: true })));
-          } else {
-            setChips([]);
-          }
-        } catch (err: any) {
-          console.error("DeepInfoPanel load error:", err);
-          setError(err.message || "โหลดข้อมูลไม่สำเร็จ");
-        } finally {
-          setLoading(false);
-        }
-      })();
-    } else {
-      // ปิด panel → reset ทั้งหมด
-      setRawText("");
-      setChips([]);
-      setError(null);
-      setLoading(false);
-    }
-  }, [open]);
+  }, [open, defaultRawText, defaultInterests]);
 
   return (
     <AnimatePresence>

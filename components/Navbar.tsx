@@ -20,7 +20,6 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
-  console.log("Navbar user:", user); // ควรเห็น object
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

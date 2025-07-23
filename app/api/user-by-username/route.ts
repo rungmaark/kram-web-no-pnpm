@@ -39,6 +39,7 @@ export async function GET(req: Request) {
     MBTI: user.MBTI,
     relationshipStatus: user.relationshipStatus,
     interests: user.interests,
+    rawProfileText: user.rawProfileText,
     careers: user.careers,
     birthYear: user.birthYear
   });

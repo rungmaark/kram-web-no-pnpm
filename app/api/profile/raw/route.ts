@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     await connectToDatabase();
     const user = await UserModel.findById(session.user.id).select(
-      "+rawProfileText interests"
+      "rawProfileText interests"
     );
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
