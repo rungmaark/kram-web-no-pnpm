@@ -4,6 +4,7 @@ import { Kanit } from "next/font/google";
 import "./globals.css";
 
 import SessionWrapper from "@/components/SessionWrapper";
+import CookieConsent from "@/components/CookieConsent";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 
@@ -12,9 +13,6 @@ const kanit = Kanit({
   weight: ["400", "700"],
   variable: "--font-kanit",
 });
-
-// ⬇️ ไม่มี import cookies แล้ว
-
 export default async function RootLayout({
   children,
 }: {
@@ -41,6 +39,7 @@ export default async function RootLayout({
       <body className="antialiased font-kanit">
         <SessionWrapper userId={userId} username={username} displayName={displayName} profileImage={profileImage} gender={gender}>
           {children}
+          <CookieConsent/>
         </SessionWrapper>
       </body>
     </html>
