@@ -470,7 +470,7 @@ export default function EditProfileModal({
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Current City"
+              placeholder="Current Location"
               className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-white mb-1"
             />
             {showSuggestions && locationSuggestions.length > 0 && (
