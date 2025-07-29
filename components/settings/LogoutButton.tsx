@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react";
 function LogoutButton() {
   async function handleSignout() {
     try {
-      await signOut({ redirect: true, callbackUrl: "http://localhost:3000" }); // ใช้ https://kram.one ใน production
+      await signOut({ redirect: true, callbackUrl: "https://kram.one" }); // ใช้ https://kram.one ใน production
     } catch (error) {
       console.error("Signout failed:", error); 
     }
