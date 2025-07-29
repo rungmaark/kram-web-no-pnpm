@@ -39,7 +39,7 @@ export default async function RootLayout({
       <body className="antialiased font-kanit">
         <SessionWrapper userId={userId} username={username} displayName={displayName} profileImage={profileImage} gender={gender}>
           {children}
-          <CookieConsent/>
+          <CookieConsent userId={userId} />
         </SessionWrapper>
       </body>
     </html>

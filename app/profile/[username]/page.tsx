@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from 'next-auth/react';
 import Navbar from "@/components/Navbar";
 import Interest from "@/components/Interest";
 import Info from "@/components/Info";
@@ -14,6 +15,7 @@ import { PostData } from "@/types/Post";
 import "@/models/Comment";
 import UserPostList from "@/components/๊๊UserPostList";
 import FollowListModal from "@/components/FollowListModal";
+
 
 // If loading a variable font, you don't need to specify the font weight
 const inter = Inter({ subsets: ["latin"] });
@@ -57,6 +59,33 @@ export default function Profile() {
   const [showModal, setShowModal] = useState<"followers" | "following" | null>(
     null
   );
+
+  const { data: session, status } = useSession();
+
+  console.log('session profile : ', session?.user)
+
+  // 1) โหลด profileId โดยใช้ username
+  useEffect(() => {
+    fetch(`/api/user-by-username?username=${username}`)
+      .then(res => {
+        if (res.status === 404) {
+          router.replace('/profile');
+          return null;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data?._id) setProfileId(data._id);
+      });
+  }, [username, router]);
+
+  // 2) รอ session พร้อม แล้วเช็ค isOwner
+  useEffect(() => {
+    if (status !== 'authenticated' || !profileId) return;
+    // session.user.id มาจาก callback ใน authOptions
+    setIsOwner(session.user.id === profileId);
+  }, [status, session, profileId]);
+
 
   // ดึงค่า decrypted rawProfileText ทันทีที่เปิด modal
   useEffect(() => {

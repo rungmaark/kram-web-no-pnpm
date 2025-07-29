@@ -36,7 +36,7 @@ export default function Signin() {
       return;
     }
     if (res?.ok && res.url) {
-        window.location.href = res.url; // ✅ reload พร้อม session
+      window.location.href = res.url; // ✅ reload พร้อม session
     }
   };
 
@@ -47,18 +47,18 @@ export default function Signin() {
   return (
     <div className="flex min-h-screen flex-1 flex-col px-6 lg:px-30 xl:px-50 lg:px-8 dark:bg-gray-800">
       <div
-        onClick={() => router.push("/")}
-        className="flex mt-5 mb-10 sm:mb-25 cursor-pointer"
+        className="flex mt-5 mb-10 sm:mb-25"
       >
         <img
           src="/image/KramLogo.svg"
           alt="Kram Logo"
-          className="h-10 w-auto"
+          className="h-10 w-auto cursor-pointer"
+          onClick={() => router.push("/")}
         />
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-          Sign In
+          Welcome Back!
         </h2>
       </div>
 
@@ -120,11 +120,10 @@ export default function Signin() {
 
           {message && (
             <p
-              className={`text-center text-sm ${
-                message === "Signin successful"
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
+              className={`text-center text-sm ${message === "Signin successful"
+                ? "text-green-500"
+                : "text-red-500"
+                }`}
             >
               {message}
             </p>

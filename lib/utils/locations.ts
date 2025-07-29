@@ -19,11 +19,12 @@ function expandLocationAbbrev(tok: string): string[] {
 
 // -------------------------------------------------
 // 2) ฟังก์ชันสร้าง locationTokens
-export function makeLocationTokens(full: string): string[] {
+export function makeLocationTokens(full: string | null | undefined): string[] {
+  if (!full) return [];
   const tokens = new Set<string>();
 
   full
-    .split(",")          // แยกด้วย comma
+    .split(",") // แยกด้วย comma
     .map((s) => s.trim())
     .filter(Boolean)
     .forEach((part) => {
@@ -32,9 +33,7 @@ export function makeLocationTokens(full: string): string[] {
       tokens.add(lc);
 
       // เก็บรูปย่อ/คำเต็ม (lower-case เช่นกัน)
-      expandLocationAbbrev(part).forEach((t) =>
-        tokens.add(t.toLowerCase())
-      );
+      expandLocationAbbrev(part).forEach((t) => tokens.add(t.toLowerCase()));
     });
 
   return [...tokens];

@@ -5,19 +5,28 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { usePathname } from "next/navigation";
 
-export default function CookieConsent() {
+interface CookieConsentProps {
+    userId: string;
+}
+
+export default function CookieConsent({ userId }: CookieConsentProps) {
     const [visible, setVisible] = useState(false);
-    const pathname = usePathname();
+    const pathname = usePathname() ?? "";
 
     useEffect(() => {
         const consent = Cookies.get("cookie_consent");
-        const isPrivacyPage = pathname === "/privacy";
+        const excludedPaths = ["/privacy", "/signin", "/signup", "/complete-profile", "/auth/redirect"];
+        const isExcludedPage = excludedPaths.includes(pathname);
 
-        // แสดง popup เฉพาะถ้า user ยังไม่ได้ accept และไม่ได้อยู่หน้า /privacy
-        if (!consent && !isPrivacyPage) {
+
+        // ✅ ไม่แสดง popup ถ้าไม่ได้ signin
+        if (!userId) return;
+
+        // ✅ แสดง popup ถ้ายังไม่ accept และไม่อยู่หน้า /privacy
+        if (!consent && !isExcludedPage) {
             setVisible(true);
         }
-    }, [pathname]);
+    }, [pathname, userId]);
 
     const accept = () => {
         Cookies.set("cookie_consent", "true", { expires: 365 });

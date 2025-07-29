@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -61,22 +62,30 @@ export default function Signup() {
     setShowPassword(!showPassword);
   };
 
+  // Google sign-up button uses full redirect
+  const handleGoogle = () => {
+    signIn("google", {
+      prompt: "consent",
+      access_type: "offline",
+      callbackUrl: `${window.location.origin}/auth/redirect`,
+    });
+  };
   return (
     <div className="flex min-h-screen flex-1 flex-col px-6 lg:px-30 xl:px-50 lg:px-8 dark:bg-gray-800">
       <div
-        onClick={() => router.push("/")}
-        className="flex mt-5 mb-10 sm:mb-25 cursor-pointer"
+        className="flex mt-5 mb-10 sm:mb-25"
       >
         <img
           src="/image/KramLogo.svg"
           alt="Kram Logo"
-          className="h-10 w-auto"
+          className="h-10 w-auto cursor-pointer"
+          onClick={() => router.push("/")}
         />
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-          Sign Up
+          Create an Account
         </h2>
       </div>
 
@@ -167,20 +176,34 @@ export default function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className={`flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-white font-semibold hover:bg-indigo-500 cursor-pointer ${
-              loading ? "animate-pulse" : ""
-            }`}
+            className={`flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-white font-semibold hover:bg-indigo-500 cursor-pointer ${loading ? "animate-pulse" : ""
+              }`}
           >
             {loading ? "Loading" : "Sign up"}
           </button>
 
+          {/* ปุ่ม Google Sign up */}
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="flex items-center justify-center w-full gap-2 rounded-md bg-white border border-gray-300 shadow-sm px-3 py-1.5 text-gray-700 font-semibold hover:bg-gray-100 cursor-pointer transition"
+          >
+            <Image
+              src="/image/google-logo.svg"
+              alt="Google logo"
+              width={20}
+              height={20}
+            />
+            <span>Sign up with Google</span>
+          </button>
+
+
           {message && (
             <p
-              className={`text-center text-sm ${
-                message === "User registered successfully"
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
+              className={`text-center text-sm ${message === "User registered successfully"
+                ? "text-green-500"
+                : "text-red-500"
+                }`}
             >
               {message}
             </p>

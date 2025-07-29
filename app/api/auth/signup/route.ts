@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       username: TrimedUsername,
       displayName,
       password: hashedPassword,
+      email: undefined,
     });
 
     await newUser.save();

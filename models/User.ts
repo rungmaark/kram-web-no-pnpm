@@ -8,11 +8,16 @@ export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   username: string;
   displayName: string;
-  password: string;
+
+  password?: string;
+  email?: string; // เพิ่ม
+  emailVerified?: Date | null; // เพิ่ม
+  image?: string; // เพิ่ม
   gender?: string;
+
   bio?: string;
   profileImage?: string;
-  rawProfileText: { type: String; default: "" };
+  rawProfileText?: string;
   instagram?: string;
   facebook?: string;
   twitter?: string;
@@ -31,28 +36,25 @@ export interface IUser extends Document {
   interests?: { interestName: string; category: string }[];
   birthYear?: number;
   careers?: string[];
-  role: {
-    type: String;
-    enum: ["user", "admin"];
-    default: "user";
-
-    email: {
-      type: String;
-      lowercase: true;
-      trim: true;
-      unique: true;
-      sparse: true; // อนุญาตให้ user เก่าที่ยังไม่มีอีเมลอยู่ได้
-    };
-    emailVerified: {
-      type: Boolean;
-      default: false;
-    };
-  };
+  role: "user" | "admin";
 }
 
 const UserSchema = new Schema<IUser>({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  username: { type: String, required: false, unique: true },
+  password: { type: String },
+  // ถ้ามาจาก OAuth (Google) จะได้ email + image + emailVerified มาอัตโนมัติ
+  email: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    unique: true,
+    sparse: true, // อนุญาตให้ user เดิมไม่มี email ได้
+  },
+  emailVerified: {
+    type: Date,
+    default: null,
+  },
+  image: String,
   displayName: { type: String, required: true },
   gender: String,
   bio: String,

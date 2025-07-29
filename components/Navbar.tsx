@@ -47,7 +47,7 @@ export default function Navbar() {
 
   async function handleSignout() {
     try {
-      await signOut({ redirect: true, callbackUrl: "https://kram.one" });
+      await signOut({ callbackUrl: '/signup' });
     } catch (error) {
       console.error("Signout failed:", error);
     }
@@ -69,8 +69,8 @@ export default function Navbar() {
         {/* Home Button */}
         <button
           className={`p-2 rounded-full ${pathname === "/"
-              ? "bg-kramblue text-white cursor-pointer"
-              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+            ? "bg-kramblue text-white cursor-pointer"
+            : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
             }`}
           onClick={() => router.push("/")}
         >
@@ -80,8 +80,8 @@ export default function Navbar() {
         {/* Search Button */}
         <button
           className={`p-2 rounded-full ${pathname === "/feed"
-              ? "bg-kramblue text-white cursor-pointer"
-              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+            ? "bg-kramblue text-white cursor-pointer"
+            : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
             }`}
           onClick={() => router.push("/feed")}
         >
@@ -92,8 +92,8 @@ export default function Navbar() {
         {user && (
           <button
             className={`p-2 rounded-full ${pathname === "/message"
-                ? "bg-kramblue text-white cursor-pointer"
-                : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+              ? "bg-kramblue text-white cursor-pointer"
+              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
               }`}
             onClick={() => router.push("/message")}
           >
@@ -102,15 +102,15 @@ export default function Navbar() {
         )}
 
         {/* User Profile Button */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             className={`p-2 rounded-full ${pathname?.startsWith(`/profile/${user?.username}`)
-                ? "bg-kramblue text-white cursor-pointer"
-                : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+              ? "bg-kramblue text-white cursor-pointer"
+              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
               }`}
             onClick={() => {
               if (user) {
-                router.push(`/profile/${user.username}`);
+                setIsDropdownOpen((prev) => !prev);
               } else {
                 router.push("/signup");
               }
@@ -119,8 +119,7 @@ export default function Navbar() {
             <UserIcon className="w-5 h-5" suppressHydrationWarning />
           </button>
 
-          {/* 
-          // ======= Dropdown Menu ถูกคอมเมนต์ออกแล้ว =======
+          {/* ======= Dropdown Menu ======= */}
           <AnimatePresence>
             {user && isDropdownOpen && (
               <motion.div
@@ -132,20 +131,25 @@ export default function Navbar() {
               >
                 <button
                   className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
-                  onClick={() => router.push(`/profile/${user.username}`)}
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    router.push(`/profile/${user.username}`);
+                  }}
                 >
                   <UserIcon className="w-4 h-4" /> View Profile
                 </button>
                 <button
                   className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
-                  onClick={handleSignout}
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    handleSignout();
+                  }}
                 >
                   <LogOut className="w-4 h-4" /> Sign Out
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
-          */}
         </div>
       </div>
     </nav>

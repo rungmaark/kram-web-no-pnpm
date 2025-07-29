@@ -36,5 +36,5 @@ export interface User {
 /** สำหรับ Context/​Cookie ที่ต้องการเฉพาะข้อมูลหลัก */
 export type MinimalUser = Pick<
   User,
-  "userId" | "username" | "displayName" | "profileImage" | "gender"
+  "userId" | "username" | "displayName" | "profileImage" | "gender" | "email"
 >;
