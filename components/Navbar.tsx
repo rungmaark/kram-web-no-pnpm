@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user;
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

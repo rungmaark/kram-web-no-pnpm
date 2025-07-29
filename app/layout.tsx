@@ -7,6 +7,7 @@ import SessionWrapper from "@/components/SessionWrapper";
 import CookieConsent from "@/components/CookieConsent";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
+import NextAuthSessionProvider from "./providers/session-provider";
 
 const kanit = Kanit({
   subsets: ["thai", "latin"],
@@ -37,10 +38,10 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased font-kanit">
-        <SessionWrapper userId={userId} username={username} displayName={displayName} profileImage={profileImage} gender={gender}>
+        <NextAuthSessionProvider>
           {children}
           <CookieConsent userId={userId} />
-        </SessionWrapper>
+        </NextAuthSessionProvider>
       </body>
     </html>
   );
