@@ -105,6 +105,12 @@ export const authOptions: NextAuthOptions = {
       // ไม่ต้องทำอะไรถ้าไม่ใช่ Google
       if (account?.provider !== "google") return true;
 
+      console.log("👀 Google →", {
+        sub: account.providerAccountId,
+        email: (user as any).email,
+        name: user.name,
+      });
+
       const email = (user as any).email?.toLowerCase();
 
       // ถ้า Google ไม่ส่ง email (rare) ให้ผ่านไปก่อน
@@ -127,7 +133,7 @@ export const authOptions: NextAuthOptions = {
           : (await User.findById(u.id).lean()) ?? u; // 🔑 fall-back ด้วย _id
 
         // 2) เอา _id (MongoDB) ให้ sub/id ของ token แน่นอน
-        const mongoId = dbUser._id.toString();
+        const mongoId = (dbUser._id ?? dbUser.id ?? u.id).toString();
         token.sub = mongoId;
         token.id = mongoId;
         token.username = dbUser.username ?? null;

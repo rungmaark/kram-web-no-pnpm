@@ -13,13 +13,14 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { signOut } from "next-auth/react";
-import { useAuth } from "@/lib/auth-context";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
