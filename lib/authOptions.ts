@@ -16,18 +16,6 @@ await connectToDatabase();
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   adapter: MongoDBAdapter(clientPromise),
-  // useSecureCookies: process.env.NODE_ENV === "production",
-  // cookies: {
-  //   sessionToken: {
-  //     name: `next-auth.session-token`,
-  //     options: {
-  //       httpOnly: true,
-  //       sameSite: "lax",
-  //       secure: process.env.NODE_ENV === "production",
-  //       path: "/",
-  //     },
-  //   },
-  // },
   providers: [
     CredentialsProvider({
       name: "credentials",

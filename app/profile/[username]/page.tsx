@@ -62,8 +62,6 @@ export default function Profile() {
 
   const { data: session, status } = useSession();
 
-  console.log('session profile : ', session?.user)
-
   // 1) โหลด profileId โดยใช้ username
   useEffect(() => {
     fetch(`/api/user-by-username?username=${username}`)

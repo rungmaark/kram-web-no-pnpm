@@ -44,6 +44,15 @@ export default function Signin() {
     setShowPassword(!showPassword);
   };
 
+  const handleGoogle = () => {
+    signIn("google", {
+      prompt: "consent",
+      access_type: "offline",
+      callbackUrl: `${window.location.origin}/auth/redirect`,
+    });
+  };
+
+
   return (
     <div className="flex min-h-screen flex-1 flex-col px-6 lg:px-30 xl:px-50 lg:px-8 dark:bg-gray-800">
       <div
@@ -118,6 +127,21 @@ export default function Signin() {
             {loading ? "Logging in" : "Log in"}
           </button>
 
+          {/* ปุ่ม Google Sign in */}
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="flex items-center justify-center w-full gap-2 rounded-md bg-white border border-gray-300 shadow-sm px-3 py-1.5 text-gray-700 font-semibold hover:bg-gray-100 cursor-pointer transition"
+          >
+            <Image
+              src="/image/google-logo.svg"
+              alt="Google logo"
+              width={20}
+              height={20}
+            />
+            <span>Sign in with Google</span>
+          </button>
+
           {message && (
             <p
               className={`text-center text-sm ${message === "Signin successful"
@@ -129,6 +153,7 @@ export default function Signin() {
             </p>
           )}
         </form>
+
         <div className="mt-5 flex flex-col gap-3">
           <div
             className="text-blue-600 font-semibold w-full text-center cursor-pointer dark:text-blue-400"
