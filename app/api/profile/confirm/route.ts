@@ -9,7 +9,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import User, { type IUser } from "@/models/User";
 import { encrypt } from "@/lib/encrypt";
 import { indexUser } from "@/lib/indexProfile";
-import { extractIndexData } from "@/models/User";
+import { extractIndexData } from "@/lib/utils/extractIndexData";
 
 /* ---------- schema ---------- */
 const Body = z.object({

@@ -1,8 +1,5 @@
 // models/User.ts
 import mongoose, { Schema, HydratedDocument, Document, models } from "mongoose";
-import { indexUser } from "@/lib/indexProfile";
-import { qdrant, USERS_COLLECTION } from "@/lib/qdrant";
-import { getQdrantIdFromUserId } from "@/lib/utils/qdrant";
 
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
@@ -10,9 +7,9 @@ export interface IUser extends Document {
   displayName: string;
 
   password?: string;
-  email?: string; // เพิ่ม
-  emailVerified?: Date | null; // เพิ่ม
-  image?: string; // เพิ่ม
+  email?: string;
+  emailVerified?: Date | null;
+  image?: string;
   gender?: string;
 
   bio?: string;
@@ -27,7 +24,7 @@ export interface IUser extends Document {
   country: String;
   location: {
     type: { type: String; enum: ["Point"]; default: "Point" };
-    coordinates: [Number]; // [lon, lat]
+    coordinates: [Number];
   };
   locationTokens: string[];
 
@@ -42,18 +39,14 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>({
   username: { type: String, required: false, unique: true },
   password: { type: String },
-  // ถ้ามาจาก OAuth (Google) จะได้ email + image + emailVerified มาอัตโนมัติ
   email: {
     type: String,
     lowercase: true,
     trim: true,
     unique: true,
-    sparse: true, // อนุญาตให้ user เดิมไม่มี email ได้
+    sparse: true,
   },
-  emailVerified: {
-    type: Date,
-    default: null,
-  },
+  emailVerified: { type: Date, default: null },
   image: String,
   displayName: { type: String, required: true },
   gender: String,
@@ -71,8 +64,8 @@ const UserSchema = new Schema<IUser>({
   birthYear: { type: Number, min: 1900, max: new Date().getFullYear() },
   interests: [
     {
-      interestName: { type: String, required: true }, // เช่น "คาเฟ่"
-      category: { type: String, default: "custom" }, // default = custom
+      interestName: { type: String, required: true },
+      category: { type: String, default: "custom" },
     },
   ],
   careers: [String],
@@ -83,60 +76,5 @@ const UserSchema = new Schema<IUser>({
   },
 });
 
-/* ---------- Qdrant Sync Hooks ---------- */
-
-function extractIndexData(doc: HydratedDocument<IUser>) {
-  return {
-    pointId: getQdrantIdFromUserId(doc._id.toString()),
-    mongoId: doc._id.toString(),
-    username: doc.username,
-    displayName: doc.displayName,
-    interests: (doc.interests || []).map((i) => i.interestName),
-    bio: doc.bio,
-    MBTI: doc.MBTI,
-    gender: doc.gender,
-    relationshipStatus: doc.relationshipStatus,
-    careers: doc.careers || [],
-    birthYear: doc.birthYear,
-    locationTokens: doc.locationTokens ?? [],
-  };
-}
-
-// สร้างใหม่
-UserSchema.post("save", async function (doc: HydratedDocument<IUser>) {
-  console.log("[hook] save →", doc.username);
-  await indexUser(extractIndexData(doc));
-});
-
-// แก้ไข
-UserSchema.post(
-  "findOneAndUpdate",
-  async function (doc: HydratedDocument<IUser> | null) {
-    if (doc) {
-      console.log("[hook] update →", doc.username);
-      await indexUser(extractIndexData(doc));
-    }
-  }
-);
-
-// ลบ
-UserSchema.post(
-  "findOneAndDelete",
-  async function (doc: HydratedDocument<IUser>) {
-    if (!doc) return;
-    try {
-      await qdrant.delete(USERS_COLLECTION, {
-        points: [getQdrantIdFromUserId(doc._id.toString())],
-      });
-
-      console.log("[hook] delete →", doc.username);
-    } catch (err: any) {
-      console.error("Qdrant delete error:", err);
-    }
-  }
-);
-
-/* ---------- Model ---------- */
 const User = models.User || mongoose.model<IUser>("User", UserSchema);
 export default User;
-export { extractIndexData };

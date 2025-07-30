@@ -12,8 +12,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import UserModel from "@/models/User";
 import { embeddingForText } from "@/lib/embedding";
 import { indexUser } from "@/lib/indexProfile";
-import { extractIndexData } from "@/models/User";
-import { indexRawProfile } from "@/lib/indexRawProfile";
+import { extractIndexData } from "@/lib/utils/extractIndexData";
+// import { indexRawProfile } from "@/lib/indexRawProfile";
 
 /* -------------------- Helper -------------------- */
 function safeJsonParse(raw: string): unknown {
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
     );
     if (user) {
       await indexUser(extractIndexData(user)); // rawProfileText จะถูกส่งไป
-      await indexRawProfile({ userId: user._id.toString(), text });
+      // await indexRawProfile({ userId: user._id.toString(), text });
     }
     if (user) await indexUser(extractIndexData(user));
 

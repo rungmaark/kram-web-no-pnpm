@@ -15,7 +15,7 @@ export default function DeepInfoPanel({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave?: () => void;
+  onSave?: (rawText: string, interests: string[]) => void;
   defaultRawText?: string;
   defaultInterests?: string[];
 }) {
@@ -62,7 +62,7 @@ export default function DeepInfoPanel({
         throw new Error(data.error || "ไม่สามารถบันทึกข้อมูลได้");
       }
       // สรุปว่าเซฟสำเร็จแล้วค่อยปิด panel
-      onSave?.();
+      onSave?.(rawText, confirmed);
       onClose();
     } catch (e: any) {
       setError(e.message);

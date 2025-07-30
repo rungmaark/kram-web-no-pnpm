@@ -2,11 +2,9 @@
 
 import { HydratedDocument } from "mongoose";
 import { IUser } from "@/models/User";
-import { getQdrantIdFromUserId } from "@/lib/utils/qdrant";
 
 export function extractIndexData(doc: HydratedDocument<IUser>) {
   return {
-    pointId: getQdrantIdFromUserId(doc._id.toString()),
     mongoId: doc._id.toString(),
     username: doc.username,
     displayName: doc.displayName,

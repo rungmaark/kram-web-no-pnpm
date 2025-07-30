@@ -206,10 +206,13 @@ export default function EditProfileModal({
     })();
   }, []); // ทำครั้งเดียวตอน modal mount
 
-  const handleDeepInfoSave = async () => {
-    setOpenDeepInfo(false);
-  };
-
+  // ① รับค่าวิเคราะห์เสร็จจาก DeepInfoPanel → อัพเดต state ที่นี่
+  function handleDeepInfoSave(newRawText: string, newInterests: string[]) {
+    setRawProfileText(newRawText);
+    setInterestsState(
+      newInterests.map((label) => ({ interestName: label, category: "custom" }))
+    );
+  }
   // ① ฟังชั่นเปิด DeepInfoPanel พร้อม decrypt
   async function openDeepInfoPanel() {
     setLoading(true);
@@ -592,9 +595,9 @@ export default function EditProfileModal({
             <DeepInfoPanel
               open={openDeepInfo}
               onClose={() => setOpenDeepInfo(false)}
-              onSave={handleDeepInfoSave}
+              onSave={handleDeepInfoSave}  // <-- ส่ง callback ใหม่
               defaultRawText={rawProfileText}
-              defaultInterests={interestsState.map(i => i.interestName)}
+              defaultInterests={interestsState.map((i) => i.interestName)}
             />
           </>
         );
