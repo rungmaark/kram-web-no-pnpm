@@ -31,6 +31,7 @@ export interface User {
     interestName: string;
     category: string;
   }[];
+  theme?: string;
 }
 
 /** สำหรับ Context/​Cookie ที่ต้องการเฉพาะข้อมูลหลัก */

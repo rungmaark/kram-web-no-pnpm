@@ -34,6 +34,7 @@ export interface IUser extends Document {
   birthYear?: number;
   careers?: string[];
   role: "user" | "admin";
+  theme: string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -74,6 +75,10 @@ const UserSchema = new Schema<IUser>({
     enum: ["user", "admin"],
     default: "user",
   },
+  theme: {
+    type: String,
+    default: "system",
+  }
 });
 
 const User = models.User || mongoose.model<IUser>("User", UserSchema);

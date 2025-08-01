@@ -8,6 +8,7 @@ import ChangePasswordModal from "@/components/settings/ChangePasswordModal";
 import DeleteAccountModal from "@/components/settings/DeleteAccountModal";
 import LogoutButton from "@/components/settings/LogoutButton";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import type { User } from "@/types/User";
 import { toast } from "react-hot-toast";
 
@@ -16,25 +17,28 @@ export default function SettingsPage() {
     "account" | "privacy" | "preferences"
   >("account");
 
+  const router = useRouter();
+
   const { data: session } = useSession();
   const user = session?.user as User | undefined;
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState(user?.email || "");
 
-  const handleSave = async () => {
-    setLoading(true);
-    if (email === user?.email) {
-      toast("No changes made");
-      return;
+  const [theme, setTheme] = useState<string>(
+    user?.theme || (typeof window !== "undefined" ? localStorage.getItem("theme") || "system" : "system")
+  );
+
+  function applyTheme(mode: string) {
+    const root = document.documentElement;
+    if (mode === "dark") {
+      root.classList.add("dark");
+    } else if (mode === "light") {
+      root.classList.remove("dark");
+    } else {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      root.classList.toggle("dark", isDark);
     }
-    await fetch("/api/auth/email/update", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    toast.success("Saved! Please verify your email.");
-    setLoading(false);
-  };
+  }
 
   return (
     <>
@@ -48,8 +52,8 @@ export default function SettingsPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`px-4 py-2 text-sm rounded-md transition-all font-medium capitalize cursor-pointer ${activeTab === tab
-                    ? "bg-white dark:bg-navbarblack text-blue-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
+                  ? "bg-white dark:bg-navbarblack text-blue-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
                   }`}
               >
                 {tab === "account"
@@ -112,17 +116,6 @@ export default function SettingsPage() {
 
                     <DeleteAccountModal />
                   </section>
-
-                  {/* --- Save Changes Button --- */}
-                  <div className="pt-6">
-                    <button
-                      onClick={handleSave}
-                      className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-black rounded-md text-sm hover:opacity-90 transition w-full"
-                      disabled={loading}
-                    >
-                      {loading ? "Saving..." : "Save Changes"}
-                    </button>
-                  </div>
                 </div>
               </>
             )}
@@ -209,30 +202,32 @@ export default function SettingsPage() {
                     </select>
                   </div>
 
-                  {/* Dark Mode toggle */}
+                  {/* Theme Options */}
                   <div className="flex justify-between items-center pt-1">
                     <div>
-                      <p className="font-medium">Dark Mode</p>
+                      <p className="font-medium">Theme</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Switch to dark theme
+                        Select Theme
                       </p>
                     </div>
                     <select
-                      className="w-32 bg-gray-100 dark:bg-[#1e1e1e] rounded px-2 py-2.5 text-sm focus:outline-none"
-                      onChange={(e) => {
-                        const mode = e.target.value;
-                        localStorage.setItem("theme", mode);
-                        if (mode === "dark") {
-                          document.documentElement.classList.add("dark");
-                        } else if (mode === "light") {
-                          document.documentElement.classList.remove("dark");
-                        } else {
-                          // 'system'
-                          const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                          document.documentElement.classList.toggle("dark", isDark);
-                        }
+                      value={theme}
+                      onChange={async (e) => {
+                        const newTheme = e.target.value;
+                        setTheme(newTheme);
+                        localStorage.setItem("theme", newTheme);
+                        applyTheme(newTheme);
+
+                        // อัปเดต DB
+                        await fetch("/api/user/theme", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ theme: newTheme }),
+                        });
+                        toast.success("Theme updated!");
+                        router.refresh();
                       }}
-                      defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "system" : "system"}
+                      className="w-32 bg-gray-100 dark:bg-[#1e1e1e] rounded px-2 py-2.5 text-sm focus:outline-none"
                     >
                       <option value="system">System default</option>
                       <option value="light">Light</option>

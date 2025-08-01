@@ -4,6 +4,7 @@ import { Kanit } from "next/font/google";
 import "./globals.css";
 
 import SessionWrapper from "@/components/SessionWrapper";
+import ThemeProvider from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
@@ -24,13 +25,10 @@ export default async function RootLayout({
 
   // ✅ เขียน optional chaining ติดกัน, ประกาศครั้งเดียว
   const userId = session?.user?.id ?? "";
-  const username = session?.user?.username ?? "";
-  const displayName = session?.user?.displayName ?? "";
-  const profileImage = session?.user?.profileImage ?? ""
-  const gender = session?.user?.gender ?? ""
+  const theme = session?.user?.theme || "system";
 
   return (
-    <html lang="th" className={kanit.variable}>
+    <html lang="th" className={`${kanit.variable} ${theme === "dark" ? "dark" : ""}`}>
       <head>
         <meta
           name="viewport"
@@ -39,8 +37,10 @@ export default async function RootLayout({
       </head>
       <body className="antialiased font-kanit">
         <NextAuthSessionProvider>
-          {children}
-          <CookieConsent userId={userId} />
+          <ThemeProvider>
+            {children}
+            <CookieConsent userId={userId} />
+          </ThemeProvider>
         </NextAuthSessionProvider>
       </body>
     </html>

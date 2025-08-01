@@ -130,6 +130,7 @@ export const authOptions: NextAuthOptions = {
         token.profileImage = dbUser.profileImage ?? null;
         token.gender = dbUser.gender ?? null;
         token.email = dbUser.email;
+        token.theme = dbUser.theme ?? "system";
       }
 
       if (!user && token?.email) {
@@ -141,6 +142,7 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role ?? "user";
           token.profileImage = dbUser.profileImage ?? undefined;
           token.gender = dbUser.gender ?? undefined;
+          token.theme = dbUser.theme ?? token.theme;
         }
       }
 
@@ -155,6 +157,7 @@ export const authOptions: NextAuthOptions = {
         session.user.gender = token.gender ?? undefined;
         session.user.role = token.role as "user" | "admin";
         session.user.email = token.email as string;
+        session.user.theme = token.theme as string;
       }
       return session;
     },

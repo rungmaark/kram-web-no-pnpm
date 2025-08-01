@@ -20,6 +20,7 @@ declare module "next-auth" {
       profileImage?: string;
       gender?: string;
       role: "user" | "admin";
+      theme?: string;
     } & DefaultSession["user"];
   }
 }
@@ -32,5 +33,6 @@ declare module "next-auth/jwt" {
     role: "user" | "admin";
     profileImage?: string;
     gender?: string;
+    theme?: string;
   }
 }
