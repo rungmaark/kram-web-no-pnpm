@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import SettingsNavbar from "@/components/settings/SettingsNavbar";
 import ChangePasswordModal from "@/components/settings/ChangePasswordModal";
 import DeleteAccountModal from "@/components/settings/DeleteAccountModal";
+import UnavailableFeatureModal from "@/components/UnavailableFeatureModal";
 import LogoutButton from "@/components/settings/LogoutButton";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,8 @@ export default function SettingsPage() {
       ? localStorage.getItem("theme") || "system"
       : "system")
   );
+
+  const [showUnavailable, setShowUnavailable] = useState(false);
 
   /**
    * Keep the local theme state in sync with the user object returned from
@@ -101,10 +104,17 @@ export default function SettingsPage() {
             {["account", "privacy", "preferences"].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => {
+                  if (tab === "privacy" || tab === "preferences") {
+                    setShowUnavailable(true);
+                    return;
+                  }
+                  setActiveTab(tab as any);
+                }}
+
                 className={`px-4 py-2 text-sm rounded-md transition-all font-medium capitalize cursor-pointer ${activeTab === tab
-                    ? "bg-white dark:bg-navbarblack text-blue-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
+                  ? "bg-white dark:bg-navbarblack text-blue-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
                   }`}
               >
                 {tab === "account"
@@ -265,12 +275,7 @@ export default function SettingsPage() {
                       value={theme}
                       onChange={async (e) => {
                         const newTheme = e.target.value;
-                        // update local state first so the UI updates immediately
-                        setTheme(newTheme);
-                        // apply the theme instantly to the document root
-                        applyTheme(newTheme);
-
-                        // update the user's preference in the database
+                        setTheme(newTheme);  // อัปเดตสถานะก่อน เพื่อให้ useEffect ทำงาน
                         await fetch("/api/user/theme", {
                           method: "PUT",
                           headers: { "Content-Type": "application/json" },
@@ -293,6 +298,7 @@ export default function SettingsPage() {
             )}
           </motion.section>
         </div>
+        <UnavailableFeatureModal open={showUnavailable} onClose={() => setShowUnavailable(false)} />
       </main>
     </>
   );

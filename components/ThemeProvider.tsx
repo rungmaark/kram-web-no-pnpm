@@ -21,14 +21,11 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
             root.classList.add("dark");
         } else if (theme === "light") {
             root.classList.remove("dark");
-        } else if (theme === "system") {
-            const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            root.classList.toggle("dark", isDark);
         } else {
-            // unknown theme values behave like system by default
             const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
             root.classList.toggle("dark", isDark);
         }
+
 
         // ฟังกรณี localStorage ถูกเปลี่ยนจาก tab อื่น
         const onStorage = (e: StorageEvent) => {
