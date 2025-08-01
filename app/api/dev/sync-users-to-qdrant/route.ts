@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       console.log("Location tokens:", tokens);
 
       await indexUser({
-        pointId,
         mongoId: user._id.toString(),
         displayName: user.displayName,
         username: user.username,
