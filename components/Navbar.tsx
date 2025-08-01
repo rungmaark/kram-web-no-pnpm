@@ -10,6 +10,7 @@ import {
   Search,
   LogOut,
   Settings,
+  Mail,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { signOut } from "next-auth/react";
@@ -128,10 +129,10 @@ export default function Navbar() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.1 }}
-                className="absolute top-12 right-0 w-48 sm:w-60 bg-white dark:bg-[#1e1e1e] bg-opacity-90 backdrop-blur-md shadow-xl rounded-md text-sm z-50 overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="absolute top-12 right-0 w-65 bg-white dark:bg-black bg-opacity-90 backdrop-blur-md shadow-xl rounded-md text-sm z-50 overflow-hidden border border-gray-200 dark:border-gray-700 "
               >
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-[#181818] transition-colors duration-100 cursor-pointer"
                   onClick={() => {
                     setIsDropdownOpen(false);
                     router.push(`/profile/${user.username}`);
@@ -140,7 +141,25 @@ export default function Navbar() {
                   <UserIcon className="w-4 h-4" /> View Profile
                 </button>
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-100 cursor-pointer"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-[#181818] transition-colors duration-100 cursor-pointer"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    router.push("/settings");
+                  }}
+                >
+                  <Settings className="w-4 h-4" /> Settings
+                </button>
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-[#181818] transition-colors duration-100 cursor-pointer"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    router.push("/feedback");
+                  }}
+                >
+                   <Mail className="w-4 h-4" /> Send feedback
+                </button>
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-100 dark:hover:bg-[#181818] transition-colors duration-100 cursor-pointer"
                   onClick={() => {
                     setIsDropdownOpen(false);
                     handleSignout();

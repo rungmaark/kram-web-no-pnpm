@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import SettingsNavbar from "@/components/settings/SettingsNavbar";
 import ChangePasswordModal from "@/components/settings/ChangePasswordModal";
+import DeleteAccountModal from "@/components/settings/DeleteAccountModal";
 import LogoutButton from "@/components/settings/LogoutButton";
 import { useSession } from "next-auth/react";
 import type { User } from "@/types/User";
@@ -46,17 +47,16 @@ export default function SettingsPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className={`px-4 py-2 text-sm rounded-md transition-all font-medium capitalize cursor-pointer ${
-                  activeTab === tab
+                className={`px-4 py-2 text-sm rounded-md transition-all font-medium capitalize cursor-pointer ${activeTab === tab
                     ? "bg-white dark:bg-navbarblack text-blue-600 shadow-sm"
                     : "text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 {tab === "account"
                   ? "Account"
                   : tab === "privacy"
-                  ? "Privacy & Security"
-                  : "Preferences"}
+                    ? "Privacy & Security"
+                    : "Preferences"}
               </button>
             ))}
           </div>
@@ -83,50 +83,14 @@ export default function SettingsPage() {
                   {/* --- Contact Info --- */}
                   <section className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                      Contact Information
+                      User Data
                     </h3>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-                        Email
-                        {user?.emailVerified ? (
-                          <span className="px-2 py-0.5 text-xs text-green-600">
-                            Verified
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-xs text-red-600">
-                            Unverified
-                          </span>
-                        )}
-                      </label>
-
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#1e1e1e] ring-1 ring-black/10 dark:ring-white/10"
-                        placeholder="you@example.com"
-                      />
-                      {user?.email && !user?.emailVerified && (
-                        <button
-                          onClick={handleSave}
-                          className="text-xs text-blue-600 hover:underline mt-1"
-                          disabled={loading}
-                        >
-                          Resend verification mail
-                        </button>
-                      )}
-                    </div>
-
-                    <div>
                       <label className="block text-sm font-medium mb-1">
-                        Phone Number
+                        Password
                       </label>
-                      <input
-                        type="tel"
-                        className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#1e1e1e] ring-1 ring-black/10 dark:ring-white/10"
-                        placeholder="+66 987654321"
-                      />
+                      <ChangePasswordModal />
                     </div>
                   </section>
 
@@ -146,25 +110,7 @@ export default function SettingsPage() {
                       Danger Zone
                     </h3>
 
-                    <button className="w-full flex items-center justify-between px-4 py-2 text-sm border border-red-400 bg-red-50 dark:bg-[#2a1a1a] text-red-600 rounded-md hover:bg-red-100 transition cursor-pointer">
-                      <span className="flex items-center gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                        Delete Account
-                      </span>
-                    </button>
+                    <DeleteAccountModal />
                   </section>
 
                   {/* --- Save Changes Button --- */}
@@ -234,14 +180,6 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </section>
-
-                  {/* Security */}
-                  <section>
-                    <h3 className="font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                      Security
-                    </h3>
-                    <ChangePasswordModal />
-                  </section>
                 </div>
               </>
             )}
@@ -267,18 +205,7 @@ export default function SettingsPage() {
                       <option>English</option>
                       <option>ภาษาไทย</option>
                       <option>Español</option>
-                      <option>Français</option>
-                    </select>
-                  </div>
-
-                  {/* Timezone */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Time Zone
-                    </label>
-                    <select className="w-full px-3 py-2 rounded-md bg-white dark:bg-[#1e1e1e] ring-1 ring-black/10 dark:ring-white/10 text-sm">
-                      <option>Pacific Standard Time</option>
-                      <option>GMT+7</option>
+                      <option>中文</option>
                     </select>
                   </div>
 
@@ -290,10 +217,28 @@ export default function SettingsPage() {
                         Switch to dark theme
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600 rounded"
-                    />
+                    <select
+                      className="w-32 bg-gray-100 dark:bg-[#1e1e1e] rounded px-2 py-2.5 text-sm focus:outline-none"
+                      onChange={(e) => {
+                        const mode = e.target.value;
+                        localStorage.setItem("theme", mode);
+                        if (mode === "dark") {
+                          document.documentElement.classList.add("dark");
+                        } else if (mode === "light") {
+                          document.documentElement.classList.remove("dark");
+                        } else {
+                          // 'system'
+                          const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                          document.documentElement.classList.toggle("dark", isDark);
+                        }
+                      }}
+                      defaultValue={typeof window !== "undefined" ? localStorage.getItem("theme") || "system" : "system"}
+                    >
+                      <option value="system">System default</option>
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+
                   </div>
                 </div>
               </section>

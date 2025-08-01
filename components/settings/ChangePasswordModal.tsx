@@ -1,28 +1,55 @@
+// components/settings/ChangePasswordModal.tsx
+
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, KeyRound } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function ChangePasswordModal() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const closeModal = () => {
     setCurrent("");
     setNewPassword("");
     setConfirm("");
+    setError("");
     setOpen(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setError("");         // เคลียร์ก่อนทุกครั้ง
     if (newPassword !== confirm) {
-      alert("New passwords do not match");
+      setError("New password is not matched");
       return;
     }
-    console.log("Password changed");
-    closeModal();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/password/update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: current,
+          newPassword: newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "เกิดข้อผิดพลาด");
+      } else {
+        toast.success("เปลี่ยนรหัสผ่านสำเร็จ");
+        closeModal();
+      }
+    } catch (err) {
+      setError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +69,7 @@ export default function ChangePasswordModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={closeModal}
           >
             <motion.div
               className="bg-white dark:bg-[#1e1e1e] w-full max-w-md mx-4 p-6 rounded-lg shadow-lg relative"
@@ -55,7 +83,7 @@ export default function ChangePasswordModal() {
                 <h2 className="text-lg font-semibold">Change Password</h2>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -99,6 +127,9 @@ export default function ChangePasswordModal() {
                     placeholder="••••••••"
                   />
                 </div>
+                {error && (
+                  <p className="mt-1 text-sm text-red-500">{error}</p>
+                )}
               </div>
 
               {/* Footer */}
@@ -111,9 +142,10 @@ export default function ChangePasswordModal() {
                 </button>
                 <button
                   onClick={handleSubmit}
+                  disabled={loading}
                   className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
                 >
-                  Save
+                  {loading ? "Saving..." : "Save"}
                 </button>
               </div>
             </motion.div>

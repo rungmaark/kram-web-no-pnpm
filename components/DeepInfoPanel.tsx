@@ -96,7 +96,7 @@ export default function DeepInfoPanel({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 700, damping: 30 }}
-            className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-lg shadow-xl p-6"
+            className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-lg shadow-xl pt-6 px-6 pb-10 max-h-[90vh] overflow-y-auto"
           >
             <h2 className="text-xl font-bold mb-4 text-zinc-800 dark:text-zinc-100">
               อธิบายตัวตนของคุณ ✨
