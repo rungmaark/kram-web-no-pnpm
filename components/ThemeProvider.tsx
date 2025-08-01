@@ -13,19 +13,19 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
     // ② ถ้ามี session.user.theme มาใหม่ ให้ override state
     useEffect(() => {
-        if (session?.user?.theme) {
-            setTheme(session.user.theme);
-        }
-    }, [session?.user?.theme]);
-
-    useEffect(() => {
         const root = document.documentElement;
-        // apply ธีม
+        // apply theme: dark/light behave explicitly; anything else falls
+        // back to system preference. This makes it safe to add new theme
+        // values in the future without breaking dark mode toggling.
         if (theme === "dark") {
             root.classList.add("dark");
         } else if (theme === "light") {
             root.classList.remove("dark");
+        } else if (theme === "system") {
+            const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            root.classList.toggle("dark", isDark);
         } else {
+            // unknown theme values behave like system by default
             const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
             root.classList.toggle("dark", isDark);
         }
