@@ -13,13 +13,12 @@ export default function UsersSearchPage() {
 
   const suggestions = [
     "หนุ่ม INTP",
-    "สาวเล่นวาโล ม.ศรีปทุม",
-    "คนเล่น rov",
-    "หนุ่มโสดชอบวาดรูป ม.ศรีปทุม",
+    "คนเล่น Valorant",
+    "คนชอบเดิมสยาม",
+    "ชอบวาดรูป",
     "คนเกิด 2007",
-    "คนทำ startup",
-    "ผู้ชาย INFJ ฟังเพลง Taylor Swift",
-    "ผู้หญิงชอบภาษา",
+    "คนทำ startup ในกรุงเทพ",
+    "ผู้ชาย INFJ ฟัง Taylor Swift",
     "คนโสด ม.ศรีปทุม"
   ];
 
