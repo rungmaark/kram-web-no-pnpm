@@ -3,17 +3,24 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import useSWRInfinite from "swr/infinite";
 import { useMediaQuery } from "@/lib/hooks";
 import Navbar from "@/components/Navbar";
 import PostForm from "@/components/PostForm";
 import PostSearch from "@/components/PostSearch";
 import PostList from "@/components/PostList";
+import { analyzePostSemantic } from "@/lib/ultraStrictSemanticAnalyzerPost";
 import { AlignLeft, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PostSearchInput from "@/components/PostSearchInput";
+import { IPost } from "@/models/Post";
+import { fetcher } from "@/lib/fetcher";
+import { getPostKey } from "@/components/PostList";
 
 export default function FeedPage() {
   const [searchText, setSearchText] = useState("");
+  const [posts, setPosts] = useState<IPost[]>([]);           // 1. โหลดโพสต์ทั้งหมดไว้
+  const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set());
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [openedPostId, setOpenedPostId] = useState<string | null>(null);
   const [universities, setUniversities] = useState<string[]>([]);
@@ -44,6 +51,24 @@ export default function FeedPage() {
     userToggled.current = false; // ✅ ผู้ใช้ปิดเอง (หรือกด X)
     setShowSearchBar(false);
   };
+
+  const isSemantic = Boolean(searchText.trim());
+  const { data: postData, isValidating: postLoading } = useSWRInfinite(
+    // ถ้า semantic → กดเรียก API เดียว (page 1)
+    isSemantic
+      ? (_pageIndex) => `/api/posts/semantic-search?q=${encodeURIComponent(searchText)}`
+      : (i, prev) =>
+        getPostKey(
+          i,
+          prev,
+          searchText,
+          universities,
+          careers || [],
+          provinces || []
+        ),
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
   return (
     <div className="dark:bg-black min-h-screen lg:px-30 xl:px-50">

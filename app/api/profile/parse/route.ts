@@ -10,7 +10,6 @@ import { authOptions } from "@/lib/authOptions";
 import { encrypt } from "@/lib/encrypt";
 import { connectToDatabase } from "@/lib/mongodb";
 import UserModel from "@/models/User";
-import { embeddingForText } from "@/lib/embedding";
 import { indexUser } from "@/lib/indexProfile";
 import { extractIndexData } from "@/lib/utils/extractIndexData";
 // import { indexRawProfile } from "@/lib/indexRawProfile";

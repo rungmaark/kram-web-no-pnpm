@@ -62,7 +62,7 @@ export default function PostSearch({
       onCareersChange?.(newSelected);
     }
 
-    if( isProvince) {
+    if (isProvince) {
       onProvincesChange?.(newSelected);
     }
   };
@@ -82,69 +82,12 @@ export default function PostSearch({
         className="mt-4 flex-1 overflow-y-auto pr-2 pb-10 space-y-4 custom-scrollbar dark:custom-scrollbar.dark custom-scrollbar.light"
         style={{ maxHeight: "calc(100vh - 120px)" }}
       >
-        {/* author by Career */}
-        <div className="border border-gray-600 rounded-xl px-4 py-3">
-          <div
-            className={`flex items-center justify-between cursor-pointer ${
-              showCareer ? "mb-2" : "mb-0"
-            }`}
-            onClick={() => setShowCareer(!showCareer)}
-          >
-            <h3 className="text-lg text-gray-800 dark:text-gray-100 font-bold select-none">
-              Author By Career
-            </h3>
-            {showCareer ? (
-              <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            )}
-          </div>
-          <AnimatePresence initial={false}>
-            {showCareer && (
-              <motion.ul
-                key="career"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                className="overflow-hidden space-y-2"
-              >
-                {Career.map((item, index) => {
-                  const selected = selectedCareers.includes(item);
-                  return (
-                    <li
-                      key={index}
-                      onClick={() =>
-                        toggleItem(
-                          item,
-                          selectedCareers,
-                          setSelectedCareers,
-                          false /* isUniversity */,
-                          true /* isCareer */
-                        )
-                      }
-                      className={`px-2 py-1 rounded cursor-pointer select-none transition-colors
-                      flex items-center ${
-                        selected
-                          ? "dark:text-white font-semibold border-l-4 border-orange-400"
-                          : "text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#1d1f23]"
-                      }`}
-                    >
-                      {item}
-                    </li>
-                  );
-                })}
-              </motion.ul>
-            )}
-          </AnimatePresence>
-        </div>
 
         {/* author by University */}
         <div className="border border-gray-600 rounded-xl px-4 py-3">
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              showUniversities ? "mb-2" : "mb-0"
-            }`}
+            className={`flex items-center justify-between cursor-pointer ${showUniversities ? "mb-2" : "mb-0"
+              }`}
             onClick={() => setShowUniversities(!showUniversities)}
           >
             <h3 className="text-lg text-gray-800 dark:text-gray-100 font-bold select-none">
@@ -180,11 +123,10 @@ export default function PostSearch({
                         )
                       }
                       className={`px-2 py-1 rounded cursor-pointer select-none transition-colors
-                      flex items-center ${
-                        selected
+                      flex items-center ${selected
                           ? "dark:text-white font-semibold border-l-4 border-orange-400"
                           : "text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#1d1f23]"
-                      }`}
+                        }`}
                     >
                       {item}
                     </li>
@@ -198,9 +140,8 @@ export default function PostSearch({
         {/* author by Province */}
         <div className="border border-gray-600 rounded-xl px-4 py-3">
           <div
-            className={`flex items-center justify-between cursor-pointer ${
-              showProvince ? "mb-2" : "mb-0"
-            }`}
+            className={`flex items-center justify-between cursor-pointer ${showProvince ? "mb-2" : "mb-0"
+              }`}
             onClick={() => setShowProvince(!showProvince)}
           >
             <h3 className="text-lg text-gray-800 dark:text-gray-100 font-bold select-none">
@@ -236,11 +177,10 @@ export default function PostSearch({
                         )
                       }
                       className={`px-2 py-1 rounded cursor-pointer select-none transition-colors
-                      flex items-center ${
-                        selected
+                      flex items-center ${selected
                           ? "dark:text-white font-semibold border-l-4 border-orange-400"
                           : "text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#1d1f23]"
-                      }`}
+                        }`}
                     >
                       {item}
                     </li>

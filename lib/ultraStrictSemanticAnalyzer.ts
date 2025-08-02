@@ -418,7 +418,7 @@ export async function calculateEnhancedSemanticRelevance(
     if (mbtiMatch && userProfile.mbti) {
       const queryMbti = mbtiMatch[1].toUpperCase();
       if (userProfile.mbti.toUpperCase() !== queryMbti) {
-      // MBTI ไม่ตรงกับ query → ไม่ต้องไปเรียก AI เพิ่มเติม
+        // MBTI ไม่ตรงกับ query → ไม่ต้องไปเรียก AI เพิ่มเติม
         return 0.0;
       }
       // ลบ MBTI จาก cleanedQuery ก่อนส่งให้ AI วิเคราะห์
@@ -638,7 +638,7 @@ export async function analyzeEnhancedSemantic(
 }
 
 // Helper function for creating embeddings
-async function createEmbedding(text: string): Promise<number[]> {
+export async function createEmbedding(text: string): Promise<number[]> {
   try {
     const response = await openai.embeddings.create({
       model: "text-embedding-3-small",

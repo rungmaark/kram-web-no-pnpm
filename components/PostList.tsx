@@ -12,7 +12,7 @@ import { X } from "lucide-react";
 type Post = PostCardProps["post"];
 
 /* ---------------- key generator ---------------- */
-const getPostKey = (
+export const getPostKey = (
   i: number,
   prev: any,
   q: string,
@@ -23,10 +23,10 @@ const getPostKey = (
   prev && !prev.hasMore
     ? null
     : `/api/auth/post/get?q=${encodeURIComponent(q)}` +
-      `&university=${encodeURIComponent(uni.join(","))}` +
-      `&career=${encodeURIComponent(careers.join(","))}` +
-      `&province=${encodeURIComponent(provinces.join(","))}` +
-      `&page=${i + 1}`;
+    `&university=${encodeURIComponent(uni.join(","))}` +
+    `&career=${encodeURIComponent(careers.join(","))}` +
+    `&province=${encodeURIComponent(provinces.join(","))}` +
+    `&page=${i + 1}`;
 
 export default function PostList({
   searchText,
